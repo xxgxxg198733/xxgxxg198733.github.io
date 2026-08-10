@@ -24,6 +24,30 @@ ARTICLES = blog_data.BLOG_ARTICLES
 # ====== Image fetching ======
 LOCAL_IMAGES = [f for f in os.listdir("images/applications") if f.endswith(('.jpg','.png','.JPG','.jpeg'))]
 
+def fetch_picsum_image(query, slug):
+    """Fetch image from Picsum (free, no API key, seed-based). Returns local filename or None."""
+    try:
+        seed = slug[:16]
+        img_url = f"https://picsum.photos/seed/{seed}/800/450"
+        ctx = ssl.create_default_context()
+        req = urllib.request.Request(img_url, headers={"User-Agent": "taoli-blog/1.0"})
+        resp = urllib.request.urlopen(req, timeout=15, context=ctx)
+        final_url = resp.geturl()
+        img_data = urllib.request.urlopen(final_url, timeout=15, context=ctx).read()
+        ext = "jpg"
+        if ".png" in final_url:
+            ext = "png"
+        elif ".webp" in final_url:
+            ext = "webp"
+        local_path = os.path.join(IMG_DIR, f"{slug}.{ext}")
+        with open(local_path, "wb") as f:
+            f.write(img_data)
+        print(f"    [Picsum] seed={seed} -> {slug}.{ext}")
+        return f"{slug}.{ext}"
+    except Exception as e:
+        print(f"    [Picsum ERR] {query}: {e}")
+    return None
+
 def fetch_pexels_image(query, slug):
     """Fetch image from Pexels API. Returns URL or None."""
     if not PEXELS_API_KEY:
@@ -49,20 +73,25 @@ def fetch_pexels_image(query, slug):
     return None
 
 def get_image(article):
-    """Get image for article. Try Pexels, fallback to local images."""
+    """Get image for article. Try Lorem Flickr, Pexels, then fallback to local images."""
     slug = article["slug"]
     # Check if already downloaded
     for f in os.listdir(IMG_DIR):
         if f.startswith(slug) and f.endswith(('.jpg','.png','.jpeg')):
             return f
 
-    # Try Pexels
+    # 1. Try Picsum (free, no API key, seed-based unique images)
+    result = fetch_picsum_image(article["pexels_query"], slug)
+    if result:
+        return result
+
+    # 2. Try Pexels if API key configured (higher quality)
     if PEXELS_API_KEY:
         result = fetch_pexels_image(article["pexels_query"], slug)
         if result:
             return result
 
-    # Fallback to local existing images
+    # 3. Fallback to local existing images
     if LOCAL_IMAGES:
         picked = random.choice(LOCAL_IMAGES)
         return f"../images/applications/{picked}"
@@ -142,6 +171,18 @@ HEADER_TMPL = '''<!DOCTYPE html>
   @keyframes ring{{0%,100%{{transform:rotate(0);}}10%{{transform:rotate(15deg);}}20%{{transform:rotate(-15deg);}}30%{{transform:rotate(10deg);}}40%{{transform:rotate(-10deg);}}50%{{transform:rotate(0);}}}}
   @media(max-width:1024px){{.nav{{padding:0 24px;height:72px;}}.nav-logo{{font-size:40px;letter-spacing:4px;}}.nav-phone{{font-size:30px;}}.related-grid{{grid-template-columns:repeat(2,1fr);}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
   @media(max-width:768px){{.nav{{padding:0 16px;height:64px;}}.nav-logo{{font-size:28px;}}.nav-phone{{font-size:16px;margin-left:8px;}}.nav-links{{display:none;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:24px;}}.article-container{{padding:0 20px 40px;}}.related-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:1fr;}}}}
+  .comment-section{{max-width:900px;margin:0 auto;padding:0 40px 40px;}}
+  .comment-section h2{{font-size:24px;font-weight:700;margin-bottom:24px;color:#1a1a1a;}}
+  .comment-form{{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}}
+  .comment-form input,.comment-form textarea{{width:100%;padding:14px 18px;border:2px solid #e8e3da;border-radius:12px;font-size:15px;font-family:inherit;transition:border-color .3s;outline:none;background:#fff;}}
+  .comment-form input:focus,.comment-form textarea:focus{{border-color:var(--primary);}}
+  .comment-form textarea{{min-height:120px;resize:vertical;}}
+  .comment-form .btn-submit{{padding:12px 32px;background:var(--primary);color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer;transition:var(--transition);align-self:flex-start;font-family:inherit;}}
+  .comment-form .btn-submit:hover{{background:var(--primary-light);transform:translateY(-2px);}}
+  .comment-form .btn-submit:disabled{{opacity:.6;cursor:not-allowed;}}
+  .comment-msg{{padding:14px 20px;border-radius:12px;margin-bottom:16px;font-size:15px;display:none;}}
+  .comment-msg.success{{display:block;background:#e8f5e9;color:#2d5a27;border:1px solid #a5d6a7;}}
+  .comment-msg.error{{display:block;background:#fbe9e7;color:#c62828;border:1px solid #ef9a9a;}}
 </style>
 <script>var _hmt=_hmt||[];(function(){{var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?50d17ca69efc1a95abaf2e673fdabebf";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);}})();</script>
 </head>
@@ -168,6 +209,36 @@ FOOTER_TMPL = '''
   </div>
   <div class="footer-bottom">&copy; 2026 九天建材 · 绿色建材品质之选. All rights reserved.</div>
 </footer>
+<script>
+function submitComment(e){{
+  e.preventDefault();
+  var btn=document.getElementById('submitBtn');
+  var msg=document.getElementById('commentMsg');
+  var name=document.getElementById('commentName').value.trim();
+  var email=document.getElementById('commentEmail').value.trim();
+  var text=document.getElementById('commentText').value.trim();
+  if(!name||!text){{msg.className='comment-msg error';msg.textContent='请填写昵称和评论内容';return false;}}
+  btn.disabled=true;btn.textContent='提交中...';
+  msg.className='comment-msg';msg.textContent='';
+  var slug=window.location.pathname.split('/').pop().replace('.html','');
+  var title=document.querySelector('.page-header h1')?document.querySelector('.page-header h1').textContent:'';
+  fetch('/api/comment',{{
+    method:'POST',headers:{{'Content-Type':'application/json'}},
+    body:JSON.stringify({{slug:slug,name:name,email:email,text:text,article_title:title}})
+  }})
+  .then(function(r){{return r.json();}})
+  .then(function(d){{
+    msg.className='comment-msg '+(d.ok?'success':'error');
+    msg.textContent=d.msg;
+    if(d.ok){{document.getElementById('commentForm').reset();}}
+  }})
+  .catch(function(err){{
+    msg.className='comment-msg error';msg.textContent='提交失败，请稍后重试';
+  }})
+  .finally(function(){{btn.disabled=false;btn.textContent='发表评论';}});
+  return false;
+}}
+</script>
 <script>(function(){{var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){{bp.src='https://zz.bdstatic.com/linksubmit/push.js';}}else{{bp.src='http://push.zhanzhang.baidu.com/push.js';}}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);}})();</script>
 <a href="tel:{phone}" class="float-phone" title="立即电话咨询"><span class="icon">&#9742;</span></a>
 </body>
@@ -232,6 +303,16 @@ def gen_article(art, all_articles):
   <div class="article-content">{art["content"]}</div>
   <div class="article-tags">{tags}</div>
 </div>
+<section class="comment-section">
+  <h2>文章评论</h2>
+  <div class="comment-msg" id="commentMsg"></div>
+  <form class="comment-form" id="commentForm" onsubmit="return submitComment(event)">
+    <input type="text" id="commentName" placeholder="您的昵称 *" required maxlength="50">
+    <input type="email" id="commentEmail" placeholder="您的邮箱（选填，方便我们回复您）" maxlength="100">
+    <textarea id="commentText" placeholder="写下您的评论或采购意向..." required maxlength="2000"></textarea>
+    <button type="submit" class="btn-submit" id="submitBtn">发表评论</button>
+  </form>
+</section>
 <section class="related-section"><h2>相关文章</h2><div class="related-grid">{related_html}</div></section>
 <section class="cta"><h2>需要陶粒产品？立即联系我们</h2><p>{SITE_NAME}提供全品类优质陶粒，全国配送，价格优惠</p><div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;"><a href="tel:{PHONE}" class="btn btn-primary">&#9742; {PHONE}</a><a href="mailto:{EMAIL}" class="btn btn-outline">&#9993; 发送邮件咨询</a></div></section>
 '''
@@ -342,6 +423,36 @@ def gen_listing(all_articles):
   </div>
   <div class="footer-bottom">&copy; 2026 九天建材. All rights reserved.</div>
 </footer>
+<script>
+function submitComment(e){{
+  e.preventDefault();
+  var btn=document.getElementById('submitBtn');
+  var msg=document.getElementById('commentMsg');
+  var name=document.getElementById('commentName').value.trim();
+  var email=document.getElementById('commentEmail').value.trim();
+  var text=document.getElementById('commentText').value.trim();
+  if(!name||!text){{msg.className='comment-msg error';msg.textContent='请填写昵称和评论内容';return false;}}
+  btn.disabled=true;btn.textContent='提交中...';
+  msg.className='comment-msg';msg.textContent='';
+  var slug=window.location.pathname.split('/').pop().replace('.html','');
+  var title=document.querySelector('.page-header h1')?document.querySelector('.page-header h1').textContent:'';
+  fetch('/api/comment',{{
+    method:'POST',headers:{{'Content-Type':'application/json'}},
+    body:JSON.stringify({{slug:slug,name:name,email:email,text:text,article_title:title}})
+  }})
+  .then(function(r){{return r.json();}})
+  .then(function(d){{
+    msg.className='comment-msg '+(d.ok?'success':'error');
+    msg.textContent=d.msg;
+    if(d.ok){{document.getElementById('commentForm').reset();}}
+  }})
+  .catch(function(err){{
+    msg.className='comment-msg error';msg.textContent='提交失败，请稍后重试';
+  }})
+  .finally(function(){{btn.disabled=false;btn.textContent='发表评论';}});
+  return false;
+}}
+</script>
 <script>(function(){{var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){{bp.src='https://zz.bdstatic.com/linksubmit/push.js';}}else{{bp.src='http://push.zhanzhang.baidu.com/push.js';}}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);}})();</script>
 <a href="tel:{PHONE}" class="float-phone"><span class="icon">&#9742;</span></a>
 </body>

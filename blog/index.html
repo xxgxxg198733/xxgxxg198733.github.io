@@ -343,6 +343,36 @@
   </div>
   <div class="footer-bottom">&copy; 2026 九天建材. All rights reserved.</div>
 </footer>
+<script>
+function submitComment(e){
+  e.preventDefault();
+  var btn=document.getElementById('submitBtn');
+  var msg=document.getElementById('commentMsg');
+  var name=document.getElementById('commentName').value.trim();
+  var email=document.getElementById('commentEmail').value.trim();
+  var text=document.getElementById('commentText').value.trim();
+  if(!name||!text){msg.className='comment-msg error';msg.textContent='请填写昵称和评论内容';return false;}
+  btn.disabled=true;btn.textContent='提交中...';
+  msg.className='comment-msg';msg.textContent='';
+  var slug=window.location.pathname.split('/').pop().replace('.html','');
+  var title=document.querySelector('.page-header h1')?document.querySelector('.page-header h1').textContent:'';
+  fetch('/api/comment',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({slug:slug,name:name,email:email,text:text,article_title:title})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    msg.className='comment-msg '+(d.ok?'success':'error');
+    msg.textContent=d.msg;
+    if(d.ok){document.getElementById('commentForm').reset();}
+  })
+  .catch(function(err){
+    msg.className='comment-msg error';msg.textContent='提交失败，请稍后重试';
+  })
+  .finally(function(){btn.disabled=false;btn.textContent='发表评论';});
+  return false;
+}
+</script>
 <script>(function(){var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){bp.src='https://zz.bdstatic.com/linksubmit/push.js';}else{bp.src='http://push.zhanzhang.baidu.com/push.js';}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);})();</script>
 <a href="tel:19008096839" class="float-phone"><span class="icon">&#9742;</span></a>
 </body>
