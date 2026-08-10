@@ -325,10 +325,11 @@ def gen_listing(all_articles):
     cat_counts = {}
     for a in all_articles:
         cat_counts[a["cat"]] = cat_counts.get(a["cat"], 0) + 1
+    sq = "'"
 
     cards = ""
     for art in sorted(all_articles, key=lambda x: x["date"], reverse=True):
-        cards += f'''<a href="{SITE_URL}/blog/{art["slug"]}.html" class="blog-card">
+        cards += f'''<a href="{SITE_URL}/blog/{art["slug"]}.html" class="blog-card" data-category="{art["cat"]}">
   <h3>{art["title"]}</h3>
   <p>{art["meta_desc"][:120]}...</p>
   <div class="blog-card-meta"><span class="article-cat" style="font-size:12px;">{CAT_NAMES.get(art["cat"], art["cat"])}</span><span>{art["date"]}</span></div>
@@ -375,8 +376,12 @@ def gen_listing(all_articles):
   .breadcrumb{{max-width:1100px;margin:0 auto;padding:20px 40px 0;font-size:14px;color:var(--text-light);}}
   .breadcrumb a{{color:var(--primary);text-decoration:none;}}
   .cat-nav{{display:flex;justify-content:center;gap:12px;padding:30px 40px;flex-wrap:wrap;}}
-  .cat-nav a{{padding:8px 22px;border-radius:50px;text-decoration:none;font-weight:600;font-size:15px;transition:var(--transition);background:var(--white);color:var(--text);box-shadow:var(--shadow);}}
-  .cat-nav a:hover{{background:var(--primary);color:#fff;}}
+  .cat-btn{{padding:8px 22px;border-radius:50px;text-decoration:none;font-weight:600;font-size:15px;transition:var(--transition);background:var(--white);color:var(--text);box-shadow:var(--shadow);border:none;cursor:pointer;font-family:inherit;}}
+  .cat-btn:hover{{background:var(--primary);color:#fff;}}
+  .cat-btn.active{{background:var(--primary);color:#fff;}}
+  .cat-count{{font-weight:400;opacity:.7;font-size:13px;}}
+  .blog-card.hidden{{display:none;}}
+  .no-results{{display:none;text-align:center;padding:40px 20px 60px;color:var(--text-light);font-size:16px;grid-column:1/-1;}}
   .blog-grid{{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:1100px;margin:0 auto;padding:30px 40px 60px;}}
   .blog-card{{background:var(--white);border-radius:var(--radius);padding:28px 32px;box-shadow:var(--shadow);transition:var(--transition);text-decoration:none;color:var(--text);display:flex;flex-direction:column;}}
   .blog-card:hover{{transform:translateY(-4px);box-shadow:var(--shadow-lg);}}
@@ -412,8 +417,9 @@ def gen_listing(all_articles):
 </nav>
 <section class="page-header"><h1><span>陶粒博客</span></h1><p>重庆陶粒选购指南 · 施工技巧 · 价格行情 · 产品知识 — 分享陶粒行业实用干货</p></section>
 <div class="breadcrumb"><a href="{SITE_URL}/">首页</a> &raquo; <span>陶粒博客</span></div>
-<div class="cat-nav">{' '.join(f'<a href="#{c}">{CAT_NAMES.get(c,c)}</a>' for c in cat_counts)}</div>
-<div class="blog-grid">{cards}</div>
+<div class="cat-nav"><button class="cat-btn active" data-filter="all" onclick="filterCategory('all',this)">全部 <span class="cat-count">({len(all_articles)})</span></button>{" ".join(f'<button class="cat-btn" data-filter="{c}" onclick="filterCategory({sq}{c}{sq},this)">{CAT_NAMES.get(c,c)} <span class="cat-count">({n})</span></button>' for c,n in cat_counts.items())}</div>
+<div class="blog-grid" id="blogGrid">{cards}</div>
+<div class="no-results" id="noResults">该分类下暂无文章</div>
 <footer class="footer">
   <div class="footer-grid">
     <div class="footer-brand"><h4 style="font-size:20px;">&#9679; 九天建材</h4><p>专注于高品质陶粒研发、生产与销售。</p></div>
@@ -451,6 +457,18 @@ function submitComment(e){{
   }})
   .finally(function(){{btn.disabled=false;btn.textContent='发表评论';}});
   return false;
+}}
+</script>
+<script>
+function filterCategory(cat,btn){{
+  document.querySelectorAll('.cat-btn').forEach(function(b){{b.classList.remove('active');}});
+  btn.classList.add('active');
+  var visible=0;
+  document.querySelectorAll('.blog-card').forEach(function(card){{
+    if(cat==='all'||card.getAttribute('data-category')===cat){{card.classList.remove('hidden');visible++;}}
+    else{{card.classList.add('hidden');}}
+  }});
+  document.getElementById('noResults').style.display=visible?'none':'block';
 }}
 </script>
 <script>(function(){{var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){{bp.src='https://zz.bdstatic.com/linksubmit/push.js';}}else{{bp.src='http://push.zhanzhang.baidu.com/push.js';}}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);}})();</script>
