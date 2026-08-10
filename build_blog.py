@@ -122,9 +122,50 @@ def expand_keywords(art):
             if primary:
                 new_kws.add(f"{q}{primary}")
 
-    # Limit to ~25 keywords max
-    final = [k for k in new_kws if len(k) <= 20][:25]
+    # Remove combos of two city names (e.g. "重庆成都陶粒")
+    import re as _re
+    city_pattern = _re.compile(r'(重庆|成都|四川|云南|贵州|海南|广州|山西|青海|西藏|新疆)(重庆|成都|四川|云南|贵州|海南|广州|山西|青海|西藏|新疆)')
+    filtered = [k for k in new_kws if len(k) <= 20 and not city_pattern.search(k)]
+
+    # Remove any that are just city pairs
+    final = filtered[:25]
     return ",".join(final)
+
+
+def optimize_h2_tags(content, art):
+    """Inject long-tail keywords into H2 headings for SEO, preserving readability."""
+    import re
+
+    primary_kw = art["keywords"].split(",")[0].strip()
+    all_kws = set(k.strip() for k in art["keywords"].replace("，", ",").split(","))
+
+    # Keywords that indicate the H2 already has good domain coverage
+    domain_terms = {"陶粒", "施工", "混凝土", "砌块", "配合比", "保温", "隔热", "价格", "采购",
+                    "回填", "屋顶", "排水", "屋面", "花园", "种植", "绿化", "水处理", "滤料"}
+
+    def enhance_h2(match):
+        h2_text = match.group(1)
+
+        # Skip if H2 already contains a keyword from the article's keyword list
+        for kw in sorted(all_kws, key=len, reverse=True)[:5]:
+            if len(kw) >= 3 and kw in h2_text:
+                return match.group(0)
+
+        # Skip if H2 already contains domain terms (already SEO-rich)
+        if any(term in h2_text for term in domain_terms):
+            return match.group(0)
+
+        # Only enhance short, generic H2s (under 8 chars = likely lacks keywords)
+        if len(h2_text) > 8:
+            return match.group(0)
+
+        # Add primary keyword as prefix - keep it short
+        short_kw = primary_kw[:6].rstrip('的与和') if len(primary_kw) > 6 else primary_kw
+        if len(short_kw) >= 3 and short_kw not in h2_text:
+            return f'<h2>{short_kw}{h2_text}</h2>'
+        return match.group(0)
+
+    return re.sub(r'<h2>([^<]+)</h2>', enhance_h2, content)
 
 
 def add_internal_links(content, related_articles):
@@ -352,7 +393,22 @@ def gen_article(art, all_articles):
     primary_kw = art["keywords"].split(",")[0].strip()
     expanded_kw = expand_keywords(art)  # auto-expand with long-tail regional/question variations
 
-    meta = f'''<meta name="description" content="{art['meta_desc']}">
+    # Baidu-optimized meta description (truncate to ~78 chars for Baidu SERP)
+    baidu_desc = art['meta_desc']
+    if len(baidu_desc) > 80:
+        # Try to break at a sentence boundary
+        cut = baidu_desc[:78].rfind('。')
+        if cut == -1: cut = baidu_desc[:78].rfind('，')
+        if cut == -1: cut = baidu_desc[:78].rfind('、')
+        if cut == -1: cut = 75
+        baidu_desc = baidu_desc[:cut+1] if cut > 20 else baidu_desc[:75]
+    if not baidu_desc.endswith('。'):
+        baidu_desc = baidu_desc.rstrip('，、') + '。'
+
+    # Word count for schema
+    word_count = len(art['content'].replace('<p>','').replace('</p>','').replace('<h2>','').replace('</h2>','').replace('<strong>','').replace('</strong>',''))
+
+    meta = f'''<meta name="description" content="{baidu_desc}">
 <meta name="keywords" content="{expanded_kw}">
 <meta name="author" content="{SITE_NAME}">
 <meta name="robots" content="index, follow">
@@ -361,17 +417,27 @@ def gen_article(art, all_articles):
 <meta property="og:description" content="{art['meta_desc']}">
 <meta property="og:type" content="article">
 <meta property="og:url" content="{canonical}">
+<meta property="og:image" content="{img_path}">
 <meta property="og:site_name" content="{SITE_NAME}">'''
 
-    # Build schemas: Article + BreadcrumbList + optional FAQPage
-    schemas = [{
+    # Keyword list for schema "about"
+    kw_list = [k.strip() for k in expanded_kw.split(",")][:10]
+
+    # Build schemas: enhanced Article + BreadcrumbList + optional FAQPage
+    article_schema = {
         "@context": "https://schema.org", "@type": "Article",
         "headline": art["title"], "description": art["meta_desc"],
         "datePublished": art["date"], "dateModified": art["date"],
         "author": {"@type": "Organization", "name": SITE_NAME, "url": SITE_URL},
         "publisher": {"@type": "Organization", "name": SITE_NAME, "url": SITE_URL},
-        "articleSection": cat_name
-    }, {
+        "articleSection": cat_name, "inLanguage": "zh-CN",
+        "wordCount": str(word_count), "about": kw_list
+    }
+    if img_path:
+        article_schema["thumbnailUrl"] = img_path
+        article_schema["image"] = img_path
+
+    schemas = [article_schema, {
         "@context": "https://schema.org", "@type": "BreadcrumbList",
         "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "首页", "item": SITE_URL},
@@ -425,8 +491,9 @@ def gen_article(art, all_articles):
         ra_kw = ra["keywords"].split(",")[0].strip() if ra["keywords"] else ra["title"]
         related_html += f'<a href="{SITE_URL}/blog/{ra["slug"]}.html" class="related-card"><div class="related-card-body"><h3>{ra["title"]}</h3><p>{ra["meta_desc"][:80]}...</p></div></a>\n'
 
-    # Add internal links to content (link to related articles)
-    linked_content = add_internal_links(art["content"], related)
+    # SEO: optimize H2 tags with keywords + add internal links
+    optimized_content = optimize_h2_tags(art["content"], art)
+    linked_content = add_internal_links(optimized_content, related)
 
     article_html = f'''
 <section class="page-header"><h1>{art["title"]}</h1><p>{art["meta_desc"]}</p></section>
