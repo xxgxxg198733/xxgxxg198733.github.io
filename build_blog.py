@@ -70,6 +70,63 @@ def find_related(art, all_articles, n=3):
     scored.sort(key=lambda x: x[0], reverse=True)
     return [a for _, a in scored[:n]]
 
+def expand_keywords(art):
+    """Auto-expand article keywords with long-tail regional and question-based variations."""
+    base_kws = [k.strip() for k in art["keywords"].replace("，", ",").split(",") if k.strip()]
+    cat = art.get("cat", "")
+    title = art["title"]
+
+    # Regional prefixes for long-tail
+    regions = ["重庆", "成都", "四川", "云南", "贵州", "海南", "广州", "山西", "青海", "西藏", "新疆"]
+
+    # Category-specific long-tail suffixes
+    cat_suffixes = {
+        "construction": ["施工工艺", "施工方案", "施工流程", "施工规范", "做法", "技术要点", "质量控制"],
+        "price": ["价格2026", "多少钱一方", "报价", "批发价格", "厂家直销价格", "价格走势"],
+        "knowledge": ["优缺点", "用途", "性能参数", "选购指南", "使用方法", "和珍珠岩对比"],
+        "district": ["厂家直销", "哪里买", "供应商", "采购指南", "附近陶粒厂", "配送范围"],
+        "garden": ["种植技巧", "怎么用", "排水方案", "屋顶花园做法", "盆栽搭配", "阳台种菜"],
+        "news": ["最新消息", "行业动态", "政策解读", "市场分析", "发展趋势"],
+    }
+
+    suffixes = cat_suffixes.get(cat, [])
+
+    # Generate long-tail: primary keyword + suffix
+    new_kws = set(base_kws)
+    primary = base_kws[0] if base_kws else ""
+
+    # 1. Primary keyword + regional prefix (limit to 3 most relevant regions)
+    top_regions = regions[:3]
+    if "重庆" in title or "重庆" in art.get("meta_desc", ""):
+        top_regions = ["重庆"] + top_regions
+    if "成都" in title or "四川" in title:
+        top_regions = ["成都", "四川"] + top_regions
+    top_regions = list(dict.fromkeys(top_regions))[:3]
+
+    for region in top_regions:
+        new_kws.add(f"{region}{primary}")
+
+    # 2. Primary keyword + suffix (limit to 3)
+    for s in suffixes[:3]:
+        new_kws.add(f"{primary}{s}")
+
+    # 3. Region + suffix (1-2 combos)
+    for region in top_regions[:2]:
+        for s in suffixes[:1]:
+            new_kws.add(f"{region}{primary}{s}")
+
+    # 4. Question-based long-tail for knowledge/news
+    if cat in ("knowledge", "news", "construction"):
+        q_words = ["什么是", "怎么", "如何"]
+        for q in q_words[:1]:
+            if primary:
+                new_kws.add(f"{q}{primary}")
+
+    # Limit to ~25 keywords max
+    final = [k for k in new_kws if len(k) <= 20][:25]
+    return ",".join(final)
+
+
 def add_internal_links(content, related_articles):
     """Append contextual 'read more' links pointing to related articles at end of content."""
     if not related_articles:
@@ -293,9 +350,10 @@ def gen_article(art, all_articles):
     # Long-tail keyword optimization: merge primary keywords into meta
     cat_name = CAT_NAMES.get(art["cat"], art["cat"])
     primary_kw = art["keywords"].split(",")[0].strip()
+    expanded_kw = expand_keywords(art)  # auto-expand with long-tail regional/question variations
 
     meta = f'''<meta name="description" content="{art['meta_desc']}">
-<meta name="keywords" content="{art['keywords']}">
+<meta name="keywords" content="{expanded_kw}">
 <meta name="author" content="{SITE_NAME}">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="{canonical}">
@@ -735,3 +793,37 @@ for cat_key in ["construction", "price", "knowledge", "district", "garden", "new
 
 print(f"All {len(ARTICLES)} blog articles + listing + {6} category pages generated.")
 print(f"Files: blog/*.html ({len(ARTICLES)+1+6} files)")
+
+# ====== Generate Sitemap ======
+TODAY = __import__('datetime').date.today().isoformat()
+sitemap_urls = []
+# Homepage
+sitemap_urls.append(('', 'weekly', '1.0'))
+# Applications
+sitemap_urls.append(('applications/', 'weekly', '0.9'))
+import glob as _glob
+for f in sorted(_glob.glob('applications/taoli-*.html')):
+    sitemap_urls.append((f, 'monthly', '0.5'))
+# Blog
+sitemap_urls.append(('blog/', 'daily', '0.9'))
+for a in ARTICLES:
+    sitemap_urls.append((f'blog/{a["slug"]}.html', 'monthly', '0.7'))
+for cat_key in CAT_NAMES:
+    if cat_key in ("water", "insulation"):
+        continue
+    sitemap_urls.append((f'blog/{cat_key}.html', 'monthly', '0.6'))
+
+sitemap_xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+for path, freq, pri in sitemap_urls:
+    sitemap_xml.append('  <url>')
+    sitemap_xml.append(f'    <loc>https://www.taoli001.cn/{path}</loc>')
+    sitemap_xml.append(f'    <lastmod>{TODAY}</lastmod>')
+    sitemap_xml.append(f'    <changefreq>{freq}</changefreq>')
+    sitemap_xml.append(f'    <priority>{pri}</priority>')
+    sitemap_xml.append('  </url>')
+sitemap_xml.append('</urlset>')
+
+with open('sitemap.xml', 'w', encoding='utf-8') as sf:
+    sf.write('\n'.join(sitemap_xml) + '\n')
+print(f'Sitemap generated: {len(sitemap_urls)} URLs')
