@@ -3,7 +3,7 @@
 Blog HTML generator for taoli001.cn
 Reads blog_data.py, fetches images via Pexels API (or fallback), generates HTML pages.
 """
-import os, sys, json, hashlib, random
+import os, sys, json, hashlib, random, re
 
 SITE_URL = "https://www.taoli001.cn"
 SITE_NAME = "九天建材"
@@ -172,11 +172,28 @@ def add_internal_links(content, related_articles):
     """Append contextual 'read more' links pointing to related articles at end of content."""
     if not related_articles:
         return content
+
+    # Phase 1: Contextual inline links — inject keyword-based links in body text
+    for ra in related_articles[:3]:
+        # Find a keyword from the related article that appears in this content
+        ra_kws = [k.strip() for k in ra["keywords"].replace("，", ",").split(",") if len(k.strip()) >= 4]
+        for kw in ra_kws[:3]:
+            idx = content.find(kw)
+            if idx > 0:
+                # Check not already inside an <a> tag
+                before = content[max(0, idx - 50):idx]
+                if '<a ' in before and '</a>' not in before:
+                    continue
+                # Wrap the keyword as a link (only first occurrence)
+                link = f'<a href="{SITE_URL}/blog/{ra["slug"]}.html" style="color:var(--primary);text-decoration:underline;" title="{ra["title"]}">{kw}</a>'
+                content = content[:idx] + link + content[idx + len(kw):]
+                break  # One inline link per related article
+
+    # Phase 2: "延伸阅读" block at end
     links_html = '<div style="margin-top:28px;padding:20px 24px;background:#f5f0e8;border-radius:12px;border-left:4px solid var(--primary);"><p style="font-weight:700;color:var(--primary);margin-bottom:12px;">延伸阅读：</p><ul style="list-style:none;padding:0;">'
     for ra in related_articles[:3]:
         links_html += f'<li style="margin-bottom:8px;">&raquo; <a href="{SITE_URL}/blog/{ra["slug"]}.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">{ra["title"]}</a></li>'
     links_html += '</ul></div>'
-    # Insert before last </p> tag
     last_p = content.rfind('</p>')
     if last_p > 0:
         return content[:last_p + 4] + links_html + content[last_p + 4:]
@@ -447,26 +464,34 @@ def gen_article(art, all_articles):
         ]
     }]
 
-    # FAQPage schema for question-style titles (contains "？" or starts with Q-words)
-    is_question = "？" in art["title"] or any(art["title"].startswith(w) for w in ["什么", "如何", "怎么", "为什么", "哪", "多少"])
-    if is_question:
+    # FAQPage schema: extract ALL question-style H2s + their following <p> as Q&A pairs
+    qa_pairs = []
+    h2_pattern = re.compile(r'<h2>([^<]*[？?][^<]*)</h2>\s*<p>(.*?)</p>', re.DOTALL)
+    for m in h2_pattern.finditer(art["content"]):
+        q_text = m.group(1).strip()
+        a_text = m.group(2).replace('<strong>', '').replace('</strong>', '')
+        a_text = a_text[:250].strip()  # Limit answer length
+        if len(q_text) > 5 and len(a_text) > 20:
+            qa_pairs.append({"@type": "Question", "name": q_text,
+                             "acceptedAnswer": {"@type": "Answer", "text": a_text}})
+    # Also check title itself
+    is_question_title = "？" in art["title"] or any(art["title"].startswith(w) for w in ["什么", "如何", "怎么", "为什么", "哪", "多少"])
+    if is_question_title:
         faq_text = art["content"].replace("<p>", "").replace("</p>", "\n").replace("<h2>", "").replace("</h2>", "").replace("<strong>", "").replace("</strong>", "")
-        # Extract first 300 chars as answer snippet
         answer_snippet = faq_text[:300].strip().replace('"', '\\"')
-        schemas.append({
-            "@context": "https://schema.org", "@type": "FAQPage",
-            "mainEntity": [{
-                "@type": "Question", "name": art["title"],
-                "acceptedAnswer": {"@type": "Answer", "text": answer_snippet}
-            }]
-        })
+        # Prepend title Q&A
+        qa_pairs.insert(0, {"@type": "Question", "name": art["title"],
+                            "acceptedAnswer": {"@type": "Answer", "text": answer_snippet}})
+    if qa_pairs:
+        schemas.append({"@context": "https://schema.org", "@type": "FAQPage",
+                        "mainEntity": qa_pairs[:10]})  # Max 10 Q&A pairs
 
     ld = json.dumps(schemas if len(schemas) > 1 else schemas[0], ensure_ascii=False)
 
     header = HEADER_TMPL.format(meta=meta, title=art["title"], ld_json=ld, site_url=SITE_URL, phone=PHONE, site_name=SITE_NAME)
 
     img_alt = f"{primary_kw} - {art['title']}" if primary_kw else art["title"]
-    img_html = f'<img src="{img_path}" alt="{img_alt}" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display=\'none\'">' if img_path else ""
+    img_html = f'<img src="{img_path}" alt="{img_alt}" loading="lazy" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display=\'none\'">' if img_path else ""
 
     breadcrumb = f'''<div class="breadcrumb"><a href="{SITE_URL}/">首页</a> &raquo; <a href="{SITE_URL}/blog/">陶粒博客</a> &raquo; <a href="{SITE_URL}/blog/{art['cat']}.html">{cat_name}</a> &raquo; <span>{art["title"]}</span></div>'''
 
