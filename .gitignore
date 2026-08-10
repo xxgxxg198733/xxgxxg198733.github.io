@@ -1,3 +1,7 @@
 .vercel
 build_articles.py
 generate_articles.py
+build_blog_data.py
+extract_*.py
+blog_data_*.json
+blog_data_append.py
