@@ -3,7 +3,7 @@
 Blog HTML generator for taoli001.cn
 Reads blog_data.py, fetches images via Pexels API (or fallback), generates HTML pages.
 """
-import os, sys, json, hashlib, time, random, urllib.request, urllib.parse, ssl
+import os, sys, json, hashlib, random
 
 SITE_URL = "https://www.taoli001.cn"
 SITE_NAME = "九天建材"
@@ -21,82 +21,68 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import blog_data
 ARTICLES = blog_data.BLOG_ARTICLES
 
-# ====== Image fetching ======
+# ====== Image & keyword utilities ======
 LOCAL_IMAGES = [f for f in os.listdir("images/applications") if f.endswith(('.jpg','.png','.JPG','.jpeg'))]
 
-def fetch_picsum_image(query, slug):
-    """Fetch image from Picsum (free, no API key, seed-based). Returns local filename or None."""
-    try:
-        seed = slug[:16]
-        img_url = f"https://picsum.photos/seed/{seed}/800/450"
-        ctx = ssl.create_default_context()
-        req = urllib.request.Request(img_url, headers={"User-Agent": "taoli-blog/1.0"})
-        resp = urllib.request.urlopen(req, timeout=15, context=ctx)
-        final_url = resp.geturl()
-        img_data = urllib.request.urlopen(final_url, timeout=15, context=ctx).read()
-        ext = "jpg"
-        if ".png" in final_url:
-            ext = "png"
-        elif ".webp" in final_url:
-            ext = "webp"
-        local_path = os.path.join(IMG_DIR, f"{slug}.{ext}")
-        with open(local_path, "wb") as f:
-            f.write(img_data)
-        print(f"    [Picsum] seed={seed} -> {slug}.{ext}")
-        return f"{slug}.{ext}"
-    except Exception as e:
-        print(f"    [Picsum ERR] {query}: {e}")
-    return None
-
-def fetch_pexels_image(query, slug):
-    """Fetch image from Pexels API. Returns URL or None."""
-    if not PEXELS_API_KEY:
-        return None
-    try:
-        url = f"https://api.pexels.com/v1/search?query={urllib.parse.quote(query)}&per_page=5&size=medium"
-        req = urllib.request.Request(url, headers={"Authorization": PEXELS_API_KEY})
-        ctx = ssl.create_default_context()
-        resp = urllib.request.urlopen(req, timeout=10, context=ctx)
-        data = json.loads(resp.read())
-        if data.get("photos"):
-            img_url = data["photos"][0]["src"]["medium"]
-            # Download to local
-            img_data = urllib.request.urlopen(img_url, timeout=15, context=ctx).read()
-            ext = img_url.split(".")[-1].split("?")[0] or "jpg"
-            local_path = os.path.join(IMG_DIR, f"{slug}.{ext}")
-            with open(local_path, "wb") as f:
-                f.write(img_data)
-            print(f"    [Pexels] {query} -> {slug}.{ext}")
-            return f"{slug}.{ext}"
-    except Exception as e:
-        print(f"    [Pexels ERR] {query}: {e}")
-    return None
+# Category-to-image mapping for relevant ceramsite photos
+CAT_IMAGE_MAP = {
+    "construction": [f for f in LOCAL_IMAGES if "construction" in f.lower()],
+    "garden": [f for f in LOCAL_IMAGES if "garden" in f.lower()],
+    "water": [f for f in LOCAL_IMAGES if "water" in f.lower()],
+    "insulation": [f for f in LOCAL_IMAGES if "insulation" in f.lower()],
+}
 
 def get_image(article):
-    """Get image for article. Try Lorem Flickr, Pexels, then fallback to local images."""
+    """Get relevant ceramsite image. Prefer local application photos matching article category."""
     slug = article["slug"]
+    cat = article.get("cat", "")
     # Check if already downloaded
     for f in os.listdir(IMG_DIR):
         if f.startswith(slug) and f.endswith(('.jpg','.png','.jpeg')):
             return f
 
-    # 1. Try Picsum (free, no API key, seed-based unique images)
-    result = fetch_picsum_image(article["pexels_query"], slug)
-    if result:
-        return result
+    # 1. Use category-relevant local image (real ceramsite photos)
+    cat_images = CAT_IMAGE_MAP.get(cat, [])
+    if cat_images:
+        picked = random.choice(cat_images)
+        return f"../images/applications/{picked}"
 
-    # 2. Try Pexels if API key configured (higher quality)
-    if PEXELS_API_KEY:
-        result = fetch_pexels_image(article["pexels_query"], slug)
-        if result:
-            return result
-
-    # 3. Fallback to local existing images
+    # 2. Fallback to any local image
     if LOCAL_IMAGES:
         picked = random.choice(LOCAL_IMAGES)
         return f"../images/applications/{picked}"
 
     return None
+
+def find_related(art, all_articles, n=3):
+    """Find related articles by shared keyword overlap score. Same category = bonus."""
+    my_kws = set(art["keywords"].replace("，", ",").split(","))
+    scored = []
+    for a in all_articles:
+        if a["slug"] == art["slug"]:
+            continue
+        a_kws = set(a["keywords"].replace("，", ",").split(","))
+        score = len(my_kws & a_kws)
+        if a["cat"] == art["cat"]:
+            score += 2  # same category bonus
+        if score > 0:
+            scored.append((score, a))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [a for _, a in scored[:n]]
+
+def add_internal_links(content, related_articles):
+    """Append contextual 'read more' links pointing to related articles at end of content."""
+    if not related_articles:
+        return content
+    links_html = '<div style="margin-top:28px;padding:20px 24px;background:#f5f0e8;border-radius:12px;border-left:4px solid var(--primary);"><p style="font-weight:700;color:var(--primary);margin-bottom:12px;">延伸阅读：</p><ul style="list-style:none;padding:0;">'
+    for ra in related_articles[:3]:
+        links_html += f'<li style="margin-bottom:8px;">&raquo; <a href="{SITE_URL}/blog/{ra["slug"]}.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">{ra["title"]}</a></li>'
+    links_html += '</ul></div>'
+    # Insert before last </p> tag
+    last_p = content.rfind('</p>')
+    if last_p > 0:
+        return content[:last_p + 4] + links_html + content[last_p + 4:]
+    return content + links_html
 
 # ====== HTML Templates ======
 HEADER_TMPL = '''<!DOCTYPE html>
@@ -254,9 +240,20 @@ def gen_article(art, all_articles):
     slug = art["slug"]
     canonical = f"{SITE_URL}/blog/{slug}.html"
     img_file = get_image(art)
-    img_path = img_file if img_file and img_file.startswith("http") else (f"{SITE_URL}/{IMG_DIR}/{img_file}" if img_file else "")
-    if img_path and not img_path.startswith("http"):
-        img_path = f"{SITE_URL}/{IMG_DIR}/{img_file}" if "/" not in img_file else f"{SITE_URL}/images/applications/{os.path.basename(img_file)}"
+    img_path = ""
+    if img_file:
+        if img_file.startswith("http"):
+            img_path = img_file
+        elif img_file.startswith("../images/"):
+            img_path = f"{SITE_URL}/images/{'/'.join(img_file.split('/')[2:])}"
+        elif "/" not in img_file:
+            img_path = f"{SITE_URL}/{IMG_DIR}/{img_file}"
+        else:
+            img_path = f"{SITE_URL}/{img_file}"
+
+    # Long-tail keyword optimization: merge primary keywords into meta
+    cat_name = CAT_NAMES.get(art["cat"], art["cat"])
+    primary_kw = art["keywords"].split(",")[0].strip()
 
     meta = f'''<meta name="description" content="{art['meta_desc']}">
 <meta name="keywords" content="{art['keywords']}">
@@ -269,38 +266,78 @@ def gen_article(art, all_articles):
 <meta property="og:url" content="{canonical}">
 <meta property="og:site_name" content="{SITE_NAME}">'''
 
-    ld = json.dumps({
+    # Build schemas: Article + BreadcrumbList + optional FAQPage
+    schemas = [{
         "@context": "https://schema.org", "@type": "Article",
         "headline": art["title"], "description": art["meta_desc"],
         "datePublished": art["date"], "dateModified": art["date"],
         "author": {"@type": "Organization", "name": SITE_NAME, "url": SITE_URL},
         "publisher": {"@type": "Organization", "name": SITE_NAME, "url": SITE_URL},
-        "articleSection": CAT_NAMES.get(art["cat"], art["cat"])
-    }, ensure_ascii=False)
+        "articleSection": cat_name
+    }, {
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "首页", "item": SITE_URL},
+            {"@type": "ListItem", "position": 2, "name": "陶粒博客", "item": f"{SITE_URL}/blog/"},
+            {"@type": "ListItem", "position": 3, "name": cat_name, "item": f"{SITE_URL}/blog/{art['cat']}.html"},
+            {"@type": "ListItem", "position": 4, "name": art["title"]}
+        ]
+    }]
+
+    # FAQPage schema for question-style titles (contains "？" or starts with Q-words)
+    is_question = "？" in art["title"] or any(art["title"].startswith(w) for w in ["什么", "如何", "怎么", "为什么", "哪", "多少"])
+    if is_question:
+        faq_text = art["content"].replace("<p>", "").replace("</p>", "\n").replace("<h2>", "").replace("</h2>", "").replace("<strong>", "").replace("</strong>", "")
+        # Extract first 300 chars as answer snippet
+        answer_snippet = faq_text[:300].strip().replace('"', '\\"')
+        schemas.append({
+            "@context": "https://schema.org", "@type": "FAQPage",
+            "mainEntity": [{
+                "@type": "Question", "name": art["title"],
+                "acceptedAnswer": {"@type": "Answer", "text": answer_snippet}
+            }]
+        })
+
+    ld = json.dumps(schemas if len(schemas) > 1 else schemas[0], ensure_ascii=False)
 
     header = HEADER_TMPL.format(meta=meta, title=art["title"], ld_json=ld, site_url=SITE_URL, phone=PHONE, site_name=SITE_NAME)
 
-    img_html = f'<img src="{img_path}" alt="{art["title"]}" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display=\'none\'">' if img_path else ""
+    img_alt = f"{primary_kw} - {art['title']}" if primary_kw else art["title"]
+    img_html = f'<img src="{img_path}" alt="{img_alt}" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display=\'none\'">' if img_path else ""
 
-    breadcrumb = f'''<div class="breadcrumb"><a href="{SITE_URL}/">首页</a> &raquo; <a href="{SITE_URL}/blog/">陶粒博客</a> &raquo; <span>{art["title"]}</span></div>'''
+    breadcrumb = f'''<div class="breadcrumb"><a href="{SITE_URL}/">首页</a> &raquo; <a href="{SITE_URL}/blog/">陶粒博客</a> &raquo; <a href="{SITE_URL}/blog/{art['cat']}.html">{cat_name}</a> &raquo; <span>{art["title"]}</span></div>'''
 
     tags = " ".join(f'<span class="article-tag">{t.strip()}</span>' for t in art["keywords"].split(",")[:6])
 
-    # Related articles
-    related = random.sample([a for a in all_articles if a["slug"] != slug], min(3, len(all_articles)-1))
+    # Smart related articles by keyword overlap
+    related = find_related(art, all_articles, n=3)
+    if len(related) < 3:
+        # fallback: same category articles
+        same_cat = [a for a in all_articles if a["cat"] == art["cat"] and a["slug"] != slug]
+        for a in same_cat:
+            if a not in related:
+                related.append(a)
+            if len(related) >= 3:
+                break
+    if len(related) < 3:
+        extra = random.sample([a for a in all_articles if a["slug"] != slug and a not in related], min(3 - len(related), len(all_articles) - 1 - len(related)))
+        related.extend(extra)
+
     related_html = ""
-    for ra in related:
-        rimg = get_image(ra)
-        rimg_path = f"{SITE_URL}/{IMG_DIR}/{rimg}" if rimg else ""
+    for ra in related[:3]:
+        ra_kw = ra["keywords"].split(",")[0].strip() if ra["keywords"] else ra["title"]
         related_html += f'<a href="{SITE_URL}/blog/{ra["slug"]}.html" class="related-card"><div class="related-card-body"><h3>{ra["title"]}</h3><p>{ra["meta_desc"][:80]}...</p></div></a>\n'
+
+    # Add internal links to content (link to related articles)
+    linked_content = add_internal_links(art["content"], related)
 
     article_html = f'''
 <section class="page-header"><h1>{art["title"]}</h1><p>{art["meta_desc"]}</p></section>
 {breadcrumb}
 <div class="article-container">
-  <div class="article-meta"><span class="article-cat">{CAT_NAMES.get(art["cat"], art["cat"])}</span><span>发布日期: {art["date"]}</span><span>来源: {SITE_NAME}</span></div>
+  <div class="article-meta"><span class="article-cat">{cat_name}</span><span>发布日期: {art["date"]}</span><span>来源: {SITE_NAME}</span></div>
   {img_html}
-  <div class="article-content">{art["content"]}</div>
+  <div class="article-content">{linked_content}</div>
   <div class="article-tags">{tags}</div>
 </div>
 <section class="comment-section">
@@ -476,9 +513,121 @@ function filterCategory(cat,btn){{
 </body>
 </html>'''
 
+def gen_category_page(cat_key, articles):
+    """Generate a category hub page with its own SEO metadata."""
+    cat_name = CAT_NAMES.get(cat_key, cat_key)
+    cat_articles = sorted([a for a in articles if a["cat"] == cat_key], key=lambda x: x["date"], reverse=True)
+    n = len(cat_articles)
+
+    cat_descriptions = {
+        "construction": "陶粒施工技巧专题 — 回填、找坡、混凝土搅拌、屋顶防水等陶粒施工全流程详解，专业施工团队经验分享。",
+        "price": "陶粒价格行情专题 — 重庆及周边各区县陶粒实时报价、价格走势分析、采购成本对比，助您买到实惠好陶粒。",
+        "knowledge": "陶粒知识百科专题 — 陶粒生产工艺、性能参数、选购技巧、产品对比，全面了解陶粒材料特性。",
+        "district": "区域采购指南专题 — 重庆各区县陶粒采购攻略，本地厂家推荐、运输成本分析、就近采购建议。",
+        "garden": "园艺绿化陶粒专题 — 屋顶花园、阳台菜园、多肉盆栽、草坪排水等园艺陶粒应用技巧与实践分享。",
+    }
+
+    cards = ""
+    for art in cat_articles:
+        cards += f'''<a href="{SITE_URL}/blog/{art["slug"]}.html" class="blog-card" data-category="{art['cat']}">
+  <h3>{art["title"]}</h3>
+  <p>{art["meta_desc"][:120]}...</p>
+  <div class="blog-card-meta"><span>{art["date"]}</span></div>
+</a>'''
+
+    # Precompute LD+JSON to avoid f-string backslash issues
+    part_items = []
+    for a in cat_articles[:10]:
+        safe_title = a['title'].replace('"', '\\"')
+        part_items.append('{"@type":"Article","headline":"' + safe_title + '"}')
+    ld_json = '{"@context":"https://schema.org","@type":"CollectionPage","name":"' + cat_name + ' - 陶粒博客专题","description":"' + cat_descriptions.get(cat_key, '') + '","url":"' + SITE_URL + '/blog/' + cat_key + '.html","hasPart":[' + ','.join(part_items) + ']}'
+
+    return f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="{cat_descriptions.get(cat_key, f'{cat_name} - {SITE_NAME}陶粒博客专题')}">
+<meta name="keywords" content="{cat_name},陶粒{cat_name},重庆陶粒{cat_name},{cat_name}陶粒,{SITE_NAME}">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="{SITE_URL}/blog/{cat_key}.html">
+<meta property="og:title" content="{cat_name} | 陶粒博客 | {SITE_NAME}">
+<meta property="og:description" content="{cat_descriptions.get(cat_key, '')}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{SITE_URL}/blog/{cat_key}.html">
+<title>{cat_name} | 陶粒博客专题 | {SITE_NAME}</title>
+<script type="application/ld+json">{ld_json}</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&display=swap');
+  *,*::before,*::after{{margin:0;padding:0;box-sizing:border-box;}}
+  :root{{--primary:#2d5a27;--primary-light:#4a7c3f;--accent:#c8924b;--accent-light:#e8c07a;--bg:#fafaf8;--bg-warm:#f5f0e8;--text:#2c2c2c;--text-light:#6b6b6b;--white:#fff;--border:#e8e3da;--shadow:0 4px 24px rgba(0,0,0,.06);--shadow-lg:0 12px 48px rgba(0,0,0,.08);--radius:16px;--transition:.35s cubic-bezier(.25,.46,.45,.94);}}
+  html{{scroll-behavior:smooth;}}
+  body{{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);line-height:1.85;}}
+  .nav{{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:90px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.05);}}
+  .nav-logo{{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;}}
+  .nav-phone{{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;}}
+  .nav-links{{display:flex;gap:36px;list-style:none;}}
+  .nav-links a{{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;}}
+  .nav-links a.active{{color:var(--primary);font-weight:700;}}
+  .nav-cta{{padding:8px 24px;background:var(--primary);color:#fff!important;border-radius:50px;font-weight:600;font-size:14px!important;}}
+  .page-header{{padding:140px 40px 60px;text-align:center;background:linear-gradient(165deg,#f5f0e8 0%,#e8e0d3 40%,#dce8d5 100%);}}
+  .page-header h1{{font-size:44px;font-weight:900;color:#1a1a1a;margin-bottom:12px;}}
+  .page-header p{{color:var(--text-light);font-size:17px;max-width:650px;margin:0 auto;}}
+  .breadcrumb{{max-width:1100px;margin:0 auto;padding:20px 40px 0;font-size:14px;color:var(--text-light);}}
+  .breadcrumb a{{color:var(--primary);text-decoration:none;}}
+  .blog-grid{{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:1100px;margin:0 auto;padding:30px 40px 60px;}}
+  .blog-card{{background:var(--white);border-radius:var(--radius);padding:28px 32px;box-shadow:var(--shadow);transition:var(--transition);text-decoration:none;color:var(--text);display:flex;flex-direction:column;}}
+  .blog-card:hover{{transform:translateY(-4px);box-shadow:var(--shadow-lg);}}
+  .blog-card h3{{font-size:18px;font-weight:700;margin-bottom:8px;line-height:1.5;color:#1a1a1a;}}
+  .blog-card p{{font-size:14px;color:var(--text-light);flex:1;margin-bottom:12px;}}
+  .blog-card-meta{{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text-light);}}
+  .footer{{padding:48px 40px 32px;background:#1a1a1a;color:rgba(255,255,255,.65);}}
+  .footer-grid{{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;max-width:1120px;margin:0 auto;gap:40px;}}
+  .footer h4{{color:#fff;font-size:15px;font-weight:700;margin-bottom:16px;}}
+  .footer a{{color:rgba(255,255,255,.5);text-decoration:none;font-size:14px;display:block;margin-bottom:8px;transition:var(--transition);}}
+  .footer a:hover{{color:var(--accent-light);}}
+  .footer-bottom{{max-width:1120px;margin:40px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);text-align:center;font-size:13px;}}
+  .float-phone{{position:fixed;bottom:32px;right:32px;z-index:999;width:60px;height:60px;border-radius:50%;background:#e74c3c;color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 24px rgba(231,76,60,.4);animation:pulse 2s infinite;}}
+  .float-phone:hover{{transform:scale(1.1);}} .float-phone .icon{{font-size:28px;animation:ring 1.5s ease-in-out infinite;}}
+  @keyframes pulse{{0%,100%{{box-shadow:0 6px 24px rgba(231,76,60,.4);}}50%{{box-shadow:0 6px 40px rgba(231,76,60,.7);}}}}
+  @keyframes ring{{0%,100%{{transform:rotate(0);}}10%{{transform:rotate(15deg);}}20%{{transform:rotate(-15deg);}}30%{{transform:rotate(10deg);}}40%{{transform:rotate(-10deg);}}50%{{transform:rotate(0);}}}}
+  @media(max-width:1024px){{.nav{{padding:0 24px;height:72px;}}.nav-logo{{font-size:40px;}}.nav-phone{{font-size:30px;}}.blog-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
+  @media(max-width:768px){{.nav{{padding:0 16px;height:64px;}}.nav-logo{{font-size:28px;}}.nav-phone{{font-size:16px;margin-left:8px;}}.nav-links{{display:none;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:30px;}}.blog-grid{{padding:20px;}}.footer-grid{{grid-template-columns:1fr;}}}}
+</style>
+<script>var _hmt=_hmt||[];(function(){{var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?50d17ca69efc1a95abaf2e673fdabebf";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);}})();</script>
+</head>
+<body>
+<nav class="nav">
+  <a href="{SITE_URL}/" class="nav-logo">九天建材</a><a href="tel:{PHONE}" class="nav-phone">&#9742; {PHONE}</a>
+  <ul class="nav-links">
+    <li><a href="{SITE_URL}/#products">产品展示</a></li>
+    <li><a href="{SITE_URL}/#scenes">应用场景</a></li>
+    <li><a href="{SITE_URL}/applications/">陶粒应用</a></li>
+    <li><a href="{SITE_URL}/blog/" class="active">陶粒博客</a></li>
+    <li><a href="{SITE_URL}/#contact" class="nav-cta">立即咨询</a></li>
+  </ul>
+</nav>
+<section class="page-header"><h1>{cat_name}</h1><p>{cat_descriptions.get(cat_key, '')}</p></section>
+<div class="breadcrumb"><a href="{SITE_URL}/">首页</a> &raquo; <a href="{SITE_URL}/blog/">陶粒博客</a> &raquo; <span>{cat_name}</span></div>
+<div class="blog-grid">{cards}</div>
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand"><h4 style="font-size:20px;">&#9679; 九天建材</h4><p>专注于高品质陶粒研发、生产与销售。</p></div>
+    <div><h4>产品中心</h4><a href="{SITE_URL}/#products">建筑结构陶粒</a><a href="{SITE_URL}/#products">园艺绿化陶粒</a><a href="{SITE_URL}/#products">水处理滤料陶粒</a><a href="{SITE_URL}/#products">耐火保温陶粒</a></div>
+    <div><h4>博客分类</h4>{"".join(f'<a href="{SITE_URL}/blog/{k}.html">{v}</a>' for k,v in CAT_NAMES.items() if k in ["construction","price","knowledge","district","garden"])}</div>
+    <div><h4>联系方式</h4><a href="tel:{PHONE}">电话：{PHONE}</a><a href="mailto:{EMAIL}">邮箱：{EMAIL}</a></div>
+  </div>
+  <div class="footer-bottom">&copy; 2026 九天建材. All rights reserved.</div>
+</footer>
+<script>(function(){{var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){{bp.src='https://zz.bdstatic.com/linksubmit/push.js';}}else{{bp.src='http://push.zhanzhang.baidu.com/push.js';}}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);}})();</script>
+<a href="tel:{PHONE}" class="float-phone"><span class="icon">&#9742;</span></a>
+</body>
+</html>'''
+
 # ====== MAIN ======
 print(f"Generating {len(ARTICLES)} blog articles...")
-print(f"Pexels API: {'configured' if PEXELS_API_KEY else 'not configured (using local images)'}")
+print(f"Using local ceramsite images from images/applications/")
 
 for i, art in enumerate(ARTICLES):
     html = gen_article(art, ARTICLES)
@@ -492,6 +641,14 @@ for i, art in enumerate(ARTICLES):
 listing = gen_listing(ARTICLES)
 with open(os.path.join(BLOG_DIR, "index.html"), "w", encoding="utf-8") as f:
     f.write(listing)
+print("  listing page done")
 
-print(f"All {len(ARTICLES)} blog articles + listing page generated.")
-print(f"Files: blog/*.html ({len(ARTICLES)+1} files)")
+# Category hub pages
+for cat_key in ["construction", "price", "knowledge", "district", "garden"]:
+    cat_html = gen_category_page(cat_key, ARTICLES)
+    with open(os.path.join(BLOG_DIR, f"{cat_key}.html"), "w", encoding="utf-8") as f:
+        f.write(cat_html)
+    print(f"  category: {cat_key}")
+
+print(f"All {len(ARTICLES)} blog articles + listing + {5} category pages generated.")
+print(f"Files: blog/*.html ({len(ARTICLES)+1+5} files)")
