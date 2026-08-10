@@ -23,14 +23,27 @@
   html{scroll-behavior:smooth;}
   body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);line-height:1.85;-webkit-font-smoothing:antialiased;}
   .nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:90px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.05);}
-  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;}
-  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;}
-  .nav-links{display:flex;gap:36px;list-style:none;}
-  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;}
+  .nav-brand{display:flex;align-items:center;flex-shrink:0;}
+  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;white-space:nowrap;}
+  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;white-space:nowrap;}
+  .nav-links{display:flex;gap:28px;list-style:none;flex-shrink:0;flex-wrap:nowrap;}
+  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;white-space:nowrap;}
   .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);transition:var(--transition);}
   .nav-links a:hover{color:var(--primary);}
   .nav-links a:hover::after,.nav-links a.active::after{width:100%;}
   .nav-links a.active{color:var(--primary);font-weight:700;}
+  .nav-toggle{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px;z-index:101;flex-shrink:0;}
+  .nav-toggle span{display:block;width:26px;height:2.5px;background:var(--text);border-radius:2px;transition:var(--transition);}
+  .nav-toggle.active span:nth-child(1){transform:rotate(45deg)translate(5px,5px);}
+  .nav-toggle.active span:nth-child(2){opacity:0;}
+  .nav-toggle.active span:nth-child(3){transform:rotate(-45deg)translate(5px,-5px);}
+  .nav-drawer{display:none;position:fixed;top:0;right:-100%;width:280px;height:100vh;background:#fff;z-index:99;padding:100px 32px 40px;box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .35s cubic-bezier(.25,.46,.45,.94);flex-direction:column;gap:8px;}
+  .nav-drawer.open{right:0;}
+  .nav-drawer a{display:block;padding:14px 0;text-decoration:none;color:var(--text);font-size:17px;font-weight:500;border-bottom:1px solid var(--border);transition:var(--transition);}
+  .nav-drawer a:hover{color:var(--primary);padding-left:8px;}
+  .nav-drawer .nav-cta-mobile{margin-top:12px;padding:14px 32px;background:var(--primary);color:#fff!important;border-radius:50px;text-align:center;font-weight:600;border-bottom:none;}
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:98;}
+  .nav-overlay.show{display:block;}
   .nav-cta{padding:8px 24px;background:var(--primary);color:#fff!important;border-radius:50px;font-weight:600;font-size:14px!important;}
   .nav-cta:hover{background:var(--primary-light);transform:translateY(-1px);}
   .nav-cta::after{display:none!important;}
@@ -77,8 +90,10 @@
   .float-phone .icon{font-size:28px;animation:ring 1.5s ease-in-out infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 6px 24px rgba(231,76,60,.4);}50%{box-shadow:0 6px 40px rgba(231,76,60,.7);}}
   @keyframes ring{0%,100%{transform:rotate(0);}10%{transform:rotate(15deg);}20%{transform:rotate(-15deg);}30%{transform:rotate(10deg);}40%{transform:rotate(-10deg);}50%{transform:rotate(0);}}
-  @media(max-width:1024px){.nav{padding:0 24px;height:72px;}.nav-logo{font-size:40px;letter-spacing:4px;}.nav-phone{font-size:30px;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:768px){.nav{padding:0 16px;height:64px;}.nav-logo{font-size:28px;}.nav-phone{font-size:16px;margin-left:8px;}.nav-links{display:none;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.article-container{padding:0 20px 40px;}.related-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}}
+  @media(max-width:1200px){.nav{padding:0 28px;}.nav-links{gap:20px;}}
+  @media(max-width:1024px){.nav{padding:0 24px;height:80px;}.nav-links{display:none;}.nav-toggle{display:flex;}.nav-drawer{display:flex;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:768px){.nav{padding:0 16px;height:68px;}.nav-logo{font-size:36px;letter-spacing:2px;}.nav-phone{font-size:22px;margin-left:10px;letter-spacing:1px;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.page-header p{font-size:15px;max-width:90%;}.article-container{padding:0 20px 40px;}.article-content h2{font-size:22px;margin:28px 0 12px;}.article-content{font-size:15px;}.article-meta{gap:12px;font-size:13px;}.related-section{padding:40px 20px;}.related-section h2{font-size:24px;}.related-grid{grid-template-columns:1fr;}.cta{padding:60px 20px;}.cta h2{font-size:28px;}.cta p{font-size:15px;}.footer{padding:40px 20px 24px;}.footer-grid{grid-template-columns:1fr;gap:24px;}.comment-section{padding:0 20px 40px;}.comment-section h2{font-size:20px;}.breadcrumb{padding:16px 20px 0;font-size:13px;}}
+  @media(max-width:480px){.nav{padding:0 12px;height:60px;}.nav-logo{font-size:28px;letter-spacing:1px;}.nav-phone{font-size:17px;margin-left:6px;letter-spacing:0;}.page-header{padding:100px 16px 32px;}.page-header h1{font-size:20px;}.page-header p{font-size:14px;}.article-container{padding:0 16px 32px;}.article-content h2{font-size:20px;margin:24px 0 10px;}.article-content{font-size:14px;}.btn{padding:12px 24px;font-size:14px;}.cta h2{font-size:24px;}.cta p{font-size:14px;}.footer{padding:32px 16px 20px;}.footer h4{font-size:14px;}.comment-section{padding:0 16px 32px;}.breadcrumb{padding:12px 16px 0;font-size:12px;}.nav-drawer{width:260px;}}
   .comment-section{max-width:900px;margin:0 auto;padding:0 40px 40px;}
   .comment-section h2{font-size:24px;font-weight:700;margin-bottom:24px;color:#1a1a1a;}
   .comment-form{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}
@@ -96,7 +111,9 @@
 </head>
 <body>
 <nav class="nav">
-  <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  <div class="nav-brand">
+    <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  </div>
   <ul class="nav-links">
     <li><a href="https://www.taoli001.cn/#products">产品展示</a></li>
     <li><a href="https://www.taoli001.cn/#scenes">应用场景</a></li>
@@ -104,14 +121,23 @@
     <li><a href="https://www.taoli001.cn/blog/" class="active">陶粒博客</a></li>
     <li><a href="https://www.taoli001.cn/#contact" class="nav-cta">立即咨询</a></li>
   </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span><span></span></button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="https://www.taoli001.cn/#products">产品展示</a>
+  <a href="https://www.taoli001.cn/#scenes">应用场景</a>
+  <a href="https://www.taoli001.cn/applications/">陶粒应用</a>
+  <a href="https://www.taoli001.cn/blog/">陶粒博客</a>
+  <a href="https://www.taoli001.cn/#contact" class="nav-cta-mobile">立即咨询</a>
+</div>
 
 <section class="page-header"><h1>陶粒的绿色环保属性：从生产到应用的全生命周期评价</h1><p>陶粒全生命周期环保评价：原料端（页岩储量丰富+粉煤灰/污泥路线消纳固废最优）、生产端（碳排放80-150kg CO₂/m³约为水泥的1/10）、使用端（建筑运行节能抵消生产碳排放）、废弃端（无机无毒可回收再生），绿色建材第一梯队产品。</p></section>
 <div class="breadcrumb"><a href="https://www.taoli001.cn/">首页</a> &raquo; <a href="https://www.taoli001.cn/blog/">陶粒博客</a> &raquo; <a href="https://www.taoli001.cn/blog/knowledge.html">陶粒知识</a> &raquo; <span>陶粒的绿色环保属性：从生产到应用的全生命周期评价</span></div>
 <div class="article-container">
   <div class="article-meta"><span class="article-cat">陶粒知识</span><span>发布日期: 2026-05-25</span><span>来源: 九天建材</span></div>
-  <img src="https://www.taoli001.cn/images/applications/IMG_4098.JPG" alt="陶粒环保 - 陶粒的绿色环保属性：从生产到应用的全生命周期评价" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
-  <div class="article-content"><p>在"双碳"目标和绿色建筑的推动下，建筑材料的环保性能受到前所未有关注。<strong>陶粒在全生命周期（从原料开采到最终废弃）中展现出优异的环保绩效</strong>。</p><h2>原料获取阶段的环保性</h2><p>页岩陶粒的原料是天然页岩——地球上最丰富的沉积岩之一，储量巨大（不像河砂面临资源枯竭）。粘土陶粒的原料粘土开采涉及耕地破坏——这是陶粒原料中最受环保争议的方向，也是国家政策限制的方向。粉煤灰陶粒和污泥陶粒使用工业固废和城市固废为原料——将"垃圾"变"资源"，是最绿色的原料路线（同时解决了固废处置和建材原料两大问题）。总体而言陶粒产业对天然矿产的消耗远低于水泥和普通骨料产业。</p><h2>生产阶段的能耗与排放</h2><p>陶粒生产需要高温焙烧（1100-1250℃），是能耗密集型过程——每立方米陶粒产品消耗天然气约20-30m³（热耗约200-300kWh/立方米），加上电耗（约15-25kWh/立方米）。每立方米陶粒的碳排放约80-150kg CO₂（视原料和燃料）。与同为高温烧成的产品对比：每吨水泥熟料碳排放约850-900kg CO₂/t（约1200-1300kg CO₂/m³），陶粒的单位碳排放仅为水泥熟料的约1/10。</p><h2>使用阶段的节能贡献</h2><p>陶粒在建筑中应用带来的建筑运行节能效益——这部分在使用阶段"还"回来的碳减排可以补偿生产阶段的碳排放。屋面陶粒混凝土保温层可使建筑空调能耗降低约10-15%（年节电约5-10kWh/m²），按建筑50年寿命计，使用阶段节省的电力碳排放远超陶粒生产阶段的碳排放。</p><h2>废弃阶段的环保性</h2><p>陶粒是无机硅酸盐材料，不含有毒有害物质，废弃后可作为建筑垃圾骨料回收再生——破碎加工后作为路基回填、新混凝土的再生骨料（替代部分天然骨料），或直接回归自然（本质上和天然岩石碎屑一样）不产生二次污染。陶粒的全生命周期环保性在众多建筑材料中属于第一梯队。</p><div style="margin-top:28px;padding:20px 24px;background:#f5f0e8;border-radius:12px;border-left:4px solid var(--primary);"><p style="font-weight:700;color:var(--primary);margin-bottom:12px;">延伸阅读：</p><ul style="list-style:none;padding:0;"><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/31ef3484b507.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">粉煤灰陶粒：把电厂废渣变成绿色建材的循环经济样本</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/361b28dec134.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒是什么？一文讲透人造轻骨料的前世今生</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/4de723e015ed.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒的生产工艺流程全揭秘：从矿山到成品</a></li></ul></div></div>
+  <img src="https://www.taoli001.cn/images/applications/未标题-4.jpg" alt="陶粒环保 - 陶粒的绿色环保属性：从生产到应用的全生命周期评价" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
+  <div class="article-content"><p>在"双碳"目标和绿色建筑的推动下，建筑材料的环保性能受到前所未有关注。<strong>陶粒在全生命周期（从原料开采到最终废弃）中展现出优异的环保绩效</strong>。</p><h2>原料获取阶段的环保性</h2><p>页岩陶粒的原料是天然页岩——地球上最丰富的沉积岩之一，储量巨大（不像河砂面临资源枯竭）。粘土陶粒的原料粘土开采涉及耕地破坏——这是陶粒原料中最受环保争议的方向，也是国家政策限制的方向。粉煤灰陶粒和污泥陶粒使用工业固废和城市固废为原料——将"垃圾"变"资源"，是最绿色的原料路线（同时解决了固废处置和建材原料两大问题）。总体而言陶粒产业对天然矿产的消耗远低于水泥和普通骨料产业。</p><h2>生产阶段的能耗与排放</h2><p>陶粒生产需要高温焙烧（1100-1250℃），是能耗密集型过程——每立方米陶粒产品消耗天然气约20-30m³（热耗约200-300kWh/立方米），加上电耗（约15-25kWh/立方米）。每立方米陶粒的碳排放约80-150kg CO₂（视原料和燃料）。与同为高温烧成的产品对比：每吨水泥熟料碳排放约850-900kg CO₂/t（约1200-1300kg CO₂/m³），陶粒的单位碳排放仅为水泥熟料的约1/10。</p><h2>使用阶段的节能贡献</h2><p>陶粒在建筑中应用带来的建筑运行节能效益——这部分在使用阶段"还"回来的碳减排可以补偿生产阶段的碳排放。屋面陶粒混凝土保温层可使建筑空调能耗降低约10-15%（年节电约5-10kWh/m²），按建筑50年寿命计，使用阶段节省的电力碳排放远超陶粒生产阶段的碳排放。</p><h2>废弃阶段的环保性</h2><p>陶粒是无机硅酸盐材料，不含有毒有害物质，废弃后可作为建筑垃圾骨料回收再生——破碎加工后作为路基回填、新混凝土的再生骨料（替代部分天然骨料），或直接回归自然（本质上和天然岩石碎屑一样）不产生二次污染。陶粒的全生命周期环保性在众多建筑材料中属于第一梯队。</p><div style="margin-top:28px;padding:20px 24px;background:#f5f0e8;border-radius:12px;border-left:4px solid var(--primary);"><p style="font-weight:700;color:var(--primary);margin-bottom:12px;">延伸阅读：</p><ul style="list-style:none;padding:0;"><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/31ef3484b507.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">粉煤灰陶粒：把电厂废渣变成绿色建材的循环经济样本</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/6746e641a0ce.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒凭什么成为绿色建筑的加分项？低碳建材时代的“隐藏选手”</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/361b28dec134.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒是什么？一文讲透人造轻骨料的前世今生</a></li></ul></div></div>
   <div class="article-tags"><span class="article-tag">陶粒环保</span> <span class="article-tag">全生命周期评价</span> <span class="article-tag">碳排放</span> <span class="article-tag">绿色建材</span> <span class="article-tag">可持续发展</span> <span class="article-tag">碳足迹</span></div>
 </div>
 <section class="comment-section">
@@ -125,8 +151,8 @@
   </form>
 </section>
 <section class="related-section"><h2>相关文章</h2><div class="related-grid"><a href="https://www.taoli001.cn/blog/31ef3484b507.html" class="related-card"><div class="related-card-body"><h3>粉煤灰陶粒：把电厂废渣变成绿色建材的循环经济样本</h3><p>粉煤灰陶粒循环经济案例：粉煤灰掺量60-85%、年产20万m³可消纳12-16万吨粉煤灰、生产工艺与页岩陶粒类似但需外加发泡剂、绿色建材政策优惠（增值税即征即退...</p></div></a>
+<a href="https://www.taoli001.cn/blog/6746e641a0ce.html" class="related-card"><div class="related-card-body"><h3>陶粒凭什么成为绿色建筑的加分项？低碳建材时代的“隐藏选手”</h3><p>陶粒绿色建材属性全解析：粉煤灰陶粒固废利用率60-80%、全生命周期3-5年回收生产能耗、LEED/绿建三星再生材料加分、运输碳排放低于碎石（轻质多拉）、低碳时...</p></div></a>
 <a href="https://www.taoli001.cn/blog/361b28dec134.html" class="related-card"><div class="related-card-body"><h3>陶粒是什么？一文讲透人造轻骨料的前世今生</h3><p>陶粒是什么：学名人造轻骨料（Expanded Clay Aggregate），经高温焙烧膨胀而成的多孔颗粒，堆积密度300-1000kg/m³，建筑、环境和园艺...</p></div></a>
-<a href="https://www.taoli001.cn/blog/4de723e015ed.html" class="related-card"><div class="related-card-body"><h3>陶粒的生产工艺流程全揭秘：从矿山到成品</h3><p>陶粒生产工艺全流程：原料破碎粉磨→配料成球→回转窑1100-1250℃高温焙烧膨胀（体积膨胀2-5倍）→冷却筛分→出厂检验，从原料到成品约4-6小时。...</p></div></a>
 </div></section>
 <section class="cta"><h2>需要陶粒产品？立即联系我们</h2><p>九天建材提供全品类优质陶粒，全国配送，价格优惠</p><div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;"><a href="tel:19008096839" class="btn btn-primary">&#9742; 19008096839</a><a href="mailto:xxgxxg198733@gmail.com" class="btn btn-outline">&#9993; 发送邮件咨询</a></div></section>
 
@@ -171,5 +197,18 @@ function submitComment(e){
 </script>
 <script>(function(){var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){bp.src='https://zz.bdstatic.com/linksubmit/push.js';}else{bp.src='http://push.zhanzhang.baidu.com/push.js';}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);})();</script>
 <a href="tel:19008096839" class="float-phone" title="立即电话咨询"><span class="icon">&#9742;</span></a>
+<script>
+// Hamburger menu
+(function(){
+  var toggle=document.getElementById('navToggle');
+  var drawer=document.getElementById('navDrawer');
+  var overlay=document.getElementById('navOverlay');
+  function open(){toggle.classList.add('active');drawer.classList.add('open');overlay.classList.add('show');document.body.style.overflow='hidden';}
+  function close(){toggle.classList.remove('active');drawer.classList.remove('open');overlay.classList.remove('show');document.body.style.overflow='';}
+  toggle.addEventListener('click',function(){toggle.classList.contains('active')?close():open();});
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});
+})();
+</script>
 </body>
 </html>

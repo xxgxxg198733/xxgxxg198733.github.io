@@ -23,14 +23,27 @@
   html{scroll-behavior:smooth;}
   body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);line-height:1.85;-webkit-font-smoothing:antialiased;}
   .nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:90px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.05);}
-  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;}
-  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;}
-  .nav-links{display:flex;gap:36px;list-style:none;}
-  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;}
+  .nav-brand{display:flex;align-items:center;flex-shrink:0;}
+  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;white-space:nowrap;}
+  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;white-space:nowrap;}
+  .nav-links{display:flex;gap:28px;list-style:none;flex-shrink:0;flex-wrap:nowrap;}
+  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;white-space:nowrap;}
   .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);transition:var(--transition);}
   .nav-links a:hover{color:var(--primary);}
   .nav-links a:hover::after,.nav-links a.active::after{width:100%;}
   .nav-links a.active{color:var(--primary);font-weight:700;}
+  .nav-toggle{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px;z-index:101;flex-shrink:0;}
+  .nav-toggle span{display:block;width:26px;height:2.5px;background:var(--text);border-radius:2px;transition:var(--transition);}
+  .nav-toggle.active span:nth-child(1){transform:rotate(45deg)translate(5px,5px);}
+  .nav-toggle.active span:nth-child(2){opacity:0;}
+  .nav-toggle.active span:nth-child(3){transform:rotate(-45deg)translate(5px,-5px);}
+  .nav-drawer{display:none;position:fixed;top:0;right:-100%;width:280px;height:100vh;background:#fff;z-index:99;padding:100px 32px 40px;box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .35s cubic-bezier(.25,.46,.45,.94);flex-direction:column;gap:8px;}
+  .nav-drawer.open{right:0;}
+  .nav-drawer a{display:block;padding:14px 0;text-decoration:none;color:var(--text);font-size:17px;font-weight:500;border-bottom:1px solid var(--border);transition:var(--transition);}
+  .nav-drawer a:hover{color:var(--primary);padding-left:8px;}
+  .nav-drawer .nav-cta-mobile{margin-top:12px;padding:14px 32px;background:var(--primary);color:#fff!important;border-radius:50px;text-align:center;font-weight:600;border-bottom:none;}
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:98;}
+  .nav-overlay.show{display:block;}
   .nav-cta{padding:8px 24px;background:var(--primary);color:#fff!important;border-radius:50px;font-weight:600;font-size:14px!important;}
   .nav-cta:hover{background:var(--primary-light);transform:translateY(-1px);}
   .nav-cta::after{display:none!important;}
@@ -77,8 +90,10 @@
   .float-phone .icon{font-size:28px;animation:ring 1.5s ease-in-out infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 6px 24px rgba(231,76,60,.4);}50%{box-shadow:0 6px 40px rgba(231,76,60,.7);}}
   @keyframes ring{0%,100%{transform:rotate(0);}10%{transform:rotate(15deg);}20%{transform:rotate(-15deg);}30%{transform:rotate(10deg);}40%{transform:rotate(-10deg);}50%{transform:rotate(0);}}
-  @media(max-width:1024px){.nav{padding:0 24px;height:72px;}.nav-logo{font-size:40px;letter-spacing:4px;}.nav-phone{font-size:30px;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:768px){.nav{padding:0 16px;height:64px;}.nav-logo{font-size:28px;}.nav-phone{font-size:16px;margin-left:8px;}.nav-links{display:none;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.article-container{padding:0 20px 40px;}.related-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}}
+  @media(max-width:1200px){.nav{padding:0 28px;}.nav-links{gap:20px;}}
+  @media(max-width:1024px){.nav{padding:0 24px;height:80px;}.nav-links{display:none;}.nav-toggle{display:flex;}.nav-drawer{display:flex;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:768px){.nav{padding:0 16px;height:68px;}.nav-logo{font-size:36px;letter-spacing:2px;}.nav-phone{font-size:22px;margin-left:10px;letter-spacing:1px;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.page-header p{font-size:15px;max-width:90%;}.article-container{padding:0 20px 40px;}.article-content h2{font-size:22px;margin:28px 0 12px;}.article-content{font-size:15px;}.article-meta{gap:12px;font-size:13px;}.related-section{padding:40px 20px;}.related-section h2{font-size:24px;}.related-grid{grid-template-columns:1fr;}.cta{padding:60px 20px;}.cta h2{font-size:28px;}.cta p{font-size:15px;}.footer{padding:40px 20px 24px;}.footer-grid{grid-template-columns:1fr;gap:24px;}.comment-section{padding:0 20px 40px;}.comment-section h2{font-size:20px;}.breadcrumb{padding:16px 20px 0;font-size:13px;}}
+  @media(max-width:480px){.nav{padding:0 12px;height:60px;}.nav-logo{font-size:28px;letter-spacing:1px;}.nav-phone{font-size:17px;margin-left:6px;letter-spacing:0;}.page-header{padding:100px 16px 32px;}.page-header h1{font-size:20px;}.page-header p{font-size:14px;}.article-container{padding:0 16px 32px;}.article-content h2{font-size:20px;margin:24px 0 10px;}.article-content{font-size:14px;}.btn{padding:12px 24px;font-size:14px;}.cta h2{font-size:24px;}.cta p{font-size:14px;}.footer{padding:32px 16px 20px;}.footer h4{font-size:14px;}.comment-section{padding:0 16px 32px;}.breadcrumb{padding:12px 16px 0;font-size:12px;}.nav-drawer{width:260px;}}
   .comment-section{max-width:900px;margin:0 auto;padding:0 40px 40px;}
   .comment-section h2{font-size:24px;font-weight:700;margin-bottom:24px;color:#1a1a1a;}
   .comment-form{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}
@@ -96,7 +111,9 @@
 </head>
 <body>
 <nav class="nav">
-  <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  <div class="nav-brand">
+    <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  </div>
   <ul class="nav-links">
     <li><a href="https://www.taoli001.cn/#products">产品展示</a></li>
     <li><a href="https://www.taoli001.cn/#scenes">应用场景</a></li>
@@ -104,13 +121,22 @@
     <li><a href="https://www.taoli001.cn/blog/" class="active">陶粒博客</a></li>
     <li><a href="https://www.taoli001.cn/#contact" class="nav-cta">立即咨询</a></li>
   </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span><span></span></button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="https://www.taoli001.cn/#products">产品展示</a>
+  <a href="https://www.taoli001.cn/#scenes">应用场景</a>
+  <a href="https://www.taoli001.cn/applications/">陶粒应用</a>
+  <a href="https://www.taoli001.cn/blog/">陶粒博客</a>
+  <a href="https://www.taoli001.cn/#contact" class="nav-cta-mobile">立即咨询</a>
+</div>
 
 <section class="page-header"><h1>陶粒在运动场草坪排水中的应用：足球场和高尔夫球场的专业方案</h1><p>陶粒运动场草坪排水专业方案：FIFA要求的50mm/h渗透速率标准、足球场草坪五层陶粒排水结构设计、高尔夫球场USGA果岭陶粒配方（10%-20%细陶粒掺入比）、陶粒方案与碎石方案的成本效益对比分析。</p></section>
 <div class="breadcrumb"><a href="https://www.taoli001.cn/">首页</a> &raquo; <a href="https://www.taoli001.cn/blog/">陶粒博客</a> &raquo; <a href="https://www.taoli001.cn/blog/garden.html">园艺绿化</a> &raquo; <span>陶粒在运动场草坪排水中的应用：足球场和高尔夫球场的专业方案</span></div>
 <div class="article-container">
   <div class="article-meta"><span class="article-cat">园艺绿化</span><span>发布日期: 2026-08-20</span><span>来源: 九天建材</span></div>
-  <img src="https://www.taoli001.cn/images/applications/2019112218410622.jpg" alt="运动场草坪 - 陶粒在运动场草坪排水中的应用：足球场和高尔夫球场的专业方案" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
+  <img src="https://www.taoli001.cn/images/applications/IMAG0087.jpg" alt="运动场草坪 - 陶粒在运动场草坪排水中的应用：足球场和高尔夫球场的专业方案" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
   <div class="article-content"><p>专业运动场草坪对排水速度有极高要求——比赛不能因场地积水而中断。<strong>陶粒排水系统是国际足联（FIFA）和USGA（美国高尔夫协会）推荐的草坪排水方案之一</strong>。</p><h2>运动场草坪排水的特殊要求</h2><p>一场标准足球赛（90分钟）期间如果下大雨，场地排水能力不足将导致比赛中断甚至取消。国际足联要求专业足球场草坪的渗透速率不低于50mm/h（即每小时至少能排走50mm的降雨量）——这相当于特大暴雨的排水标准。普通自然土壤的渗透速率仅5-15mm/h，远远无法满足要求。陶粒排水层可以将渗透速率提升至200-500mm/h——是FIFA要求的4-10倍。</p><h2>运动场陶粒排水层的标准设计</h2><p>专业足球场草坪结构（自上而下）：草皮层5-10cm（天然草或人工草+填充层）、根际层15-20cm（砂基混合基质：中粗砂80%+细陶粒10%+有机质10%）、过渡层5-10cm（粗砂或细陶粒3-8mm）、排水层10-20cm（陶粒粒径15-25mm，内部铺设排水盲管间距3-5m）、底部隔水层（HDPE膜或黏土层，引导排水流向排水沟）。</p><h2>高尔夫球场的陶粒应用特色</h2><p>高尔夫球场果岭对排水要求最高——果岭草坪高度仅3-5mm，任何积水都会严重影响推杆精度。USGA推荐果岭根际层中掺入10%-20%的陶粒（粒径2-4mm），配合底部的陶粒排水层（厚度至少10cm），确保果岭在任何天气条件下保持最佳打球状态。</p><h2>经济性分析</h2><p>相比传统的碎石排水层方案，陶粒排水方案成本高约20%-30%，但优势明显：重量轻（减少地基处理和运输成本）、施工快（陶粒轻质易铺装）、使用寿命长（不风化、不堵塞）。对于高质量运动场馆，陶粒排水是值得投资的长效方案。</p><div style="margin-top:28px;padding:20px 24px;background:#f5f0e8;border-radius:12px;border-left:4px solid var(--primary);"><p style="font-weight:700;color:var(--primary);margin-bottom:12px;">延伸阅读：</p><ul style="list-style:none;padding:0;"><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/1754578d52e9.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒草坪排水系统：告别雨后积水烂草的终极解决方案</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/168959a3acaa.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒在足球场和高尔夫球场草坪排水系统中的应用</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/823b5e0b202d.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">室内大型绿植盆栽的陶粒排水技巧：宾馆大堂植物的养护秘诀</a></li></ul></div></div>
   <div class="article-tags"><span class="article-tag">运动场草坪</span> <span class="article-tag">陶粒排水</span> <span class="article-tag">足球场</span> <span class="article-tag">高尔夫球场</span> <span class="article-tag">草坪排水</span> <span class="article-tag">USGA标准</span></div>
 </div>
@@ -171,5 +197,18 @@ function submitComment(e){
 </script>
 <script>(function(){var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){bp.src='https://zz.bdstatic.com/linksubmit/push.js';}else{bp.src='http://push.zhanzhang.baidu.com/push.js';}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);})();</script>
 <a href="tel:19008096839" class="float-phone" title="立即电话咨询"><span class="icon">&#9742;</span></a>
+<script>
+// Hamburger menu
+(function(){
+  var toggle=document.getElementById('navToggle');
+  var drawer=document.getElementById('navDrawer');
+  var overlay=document.getElementById('navOverlay');
+  function open(){toggle.classList.add('active');drawer.classList.add('open');overlay.classList.add('show');document.body.style.overflow='hidden';}
+  function close(){toggle.classList.remove('active');drawer.classList.remove('open');overlay.classList.remove('show');document.body.style.overflow='';}
+  toggle.addEventListener('click',function(){toggle.classList.contains('active')?close():open();});
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});
+})();
+</script>
 </body>
 </html>

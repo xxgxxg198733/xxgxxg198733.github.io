@@ -23,14 +23,27 @@
   html{scroll-behavior:smooth;}
   body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);line-height:1.85;-webkit-font-smoothing:antialiased;}
   .nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:90px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.05);}
-  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;}
-  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;}
-  .nav-links{display:flex;gap:36px;list-style:none;}
-  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;}
+  .nav-brand{display:flex;align-items:center;flex-shrink:0;}
+  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;white-space:nowrap;}
+  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;white-space:nowrap;}
+  .nav-links{display:flex;gap:28px;list-style:none;flex-shrink:0;flex-wrap:nowrap;}
+  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;white-space:nowrap;}
   .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);transition:var(--transition);}
   .nav-links a:hover{color:var(--primary);}
   .nav-links a:hover::after,.nav-links a.active::after{width:100%;}
   .nav-links a.active{color:var(--primary);font-weight:700;}
+  .nav-toggle{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px;z-index:101;flex-shrink:0;}
+  .nav-toggle span{display:block;width:26px;height:2.5px;background:var(--text);border-radius:2px;transition:var(--transition);}
+  .nav-toggle.active span:nth-child(1){transform:rotate(45deg)translate(5px,5px);}
+  .nav-toggle.active span:nth-child(2){opacity:0;}
+  .nav-toggle.active span:nth-child(3){transform:rotate(-45deg)translate(5px,-5px);}
+  .nav-drawer{display:none;position:fixed;top:0;right:-100%;width:280px;height:100vh;background:#fff;z-index:99;padding:100px 32px 40px;box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .35s cubic-bezier(.25,.46,.45,.94);flex-direction:column;gap:8px;}
+  .nav-drawer.open{right:0;}
+  .nav-drawer a{display:block;padding:14px 0;text-decoration:none;color:var(--text);font-size:17px;font-weight:500;border-bottom:1px solid var(--border);transition:var(--transition);}
+  .nav-drawer a:hover{color:var(--primary);padding-left:8px;}
+  .nav-drawer .nav-cta-mobile{margin-top:12px;padding:14px 32px;background:var(--primary);color:#fff!important;border-radius:50px;text-align:center;font-weight:600;border-bottom:none;}
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:98;}
+  .nav-overlay.show{display:block;}
   .nav-cta{padding:8px 24px;background:var(--primary);color:#fff!important;border-radius:50px;font-weight:600;font-size:14px!important;}
   .nav-cta:hover{background:var(--primary-light);transform:translateY(-1px);}
   .nav-cta::after{display:none!important;}
@@ -77,8 +90,10 @@
   .float-phone .icon{font-size:28px;animation:ring 1.5s ease-in-out infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 6px 24px rgba(231,76,60,.4);}50%{box-shadow:0 6px 40px rgba(231,76,60,.7);}}
   @keyframes ring{0%,100%{transform:rotate(0);}10%{transform:rotate(15deg);}20%{transform:rotate(-15deg);}30%{transform:rotate(10deg);}40%{transform:rotate(-10deg);}50%{transform:rotate(0);}}
-  @media(max-width:1024px){.nav{padding:0 24px;height:72px;}.nav-logo{font-size:40px;letter-spacing:4px;}.nav-phone{font-size:30px;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:768px){.nav{padding:0 16px;height:64px;}.nav-logo{font-size:28px;}.nav-phone{font-size:16px;margin-left:8px;}.nav-links{display:none;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.article-container{padding:0 20px 40px;}.related-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}}
+  @media(max-width:1200px){.nav{padding:0 28px;}.nav-links{gap:20px;}}
+  @media(max-width:1024px){.nav{padding:0 24px;height:80px;}.nav-links{display:none;}.nav-toggle{display:flex;}.nav-drawer{display:flex;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:768px){.nav{padding:0 16px;height:68px;}.nav-logo{font-size:36px;letter-spacing:2px;}.nav-phone{font-size:22px;margin-left:10px;letter-spacing:1px;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.page-header p{font-size:15px;max-width:90%;}.article-container{padding:0 20px 40px;}.article-content h2{font-size:22px;margin:28px 0 12px;}.article-content{font-size:15px;}.article-meta{gap:12px;font-size:13px;}.related-section{padding:40px 20px;}.related-section h2{font-size:24px;}.related-grid{grid-template-columns:1fr;}.cta{padding:60px 20px;}.cta h2{font-size:28px;}.cta p{font-size:15px;}.footer{padding:40px 20px 24px;}.footer-grid{grid-template-columns:1fr;gap:24px;}.comment-section{padding:0 20px 40px;}.comment-section h2{font-size:20px;}.breadcrumb{padding:16px 20px 0;font-size:13px;}}
+  @media(max-width:480px){.nav{padding:0 12px;height:60px;}.nav-logo{font-size:28px;letter-spacing:1px;}.nav-phone{font-size:17px;margin-left:6px;letter-spacing:0;}.page-header{padding:100px 16px 32px;}.page-header h1{font-size:20px;}.page-header p{font-size:14px;}.article-container{padding:0 16px 32px;}.article-content h2{font-size:20px;margin:24px 0 10px;}.article-content{font-size:14px;}.btn{padding:12px 24px;font-size:14px;}.cta h2{font-size:24px;}.cta p{font-size:14px;}.footer{padding:32px 16px 20px;}.footer h4{font-size:14px;}.comment-section{padding:0 16px 32px;}.breadcrumb{padding:12px 16px 0;font-size:12px;}.nav-drawer{width:260px;}}
   .comment-section{max-width:900px;margin:0 auto;padding:0 40px 40px;}
   .comment-section h2{font-size:24px;font-weight:700;margin-bottom:24px;color:#1a1a1a;}
   .comment-form{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}
@@ -96,7 +111,9 @@
 </head>
 <body>
 <nav class="nav">
-  <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  <div class="nav-brand">
+    <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  </div>
   <ul class="nav-links">
     <li><a href="https://www.taoli001.cn/#products">产品展示</a></li>
     <li><a href="https://www.taoli001.cn/#scenes">应用场景</a></li>
@@ -104,13 +121,22 @@
     <li><a href="https://www.taoli001.cn/blog/" class="active">陶粒博客</a></li>
     <li><a href="https://www.taoli001.cn/#contact" class="nav-cta">立即咨询</a></li>
   </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span><span></span></button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="https://www.taoli001.cn/#products">产品展示</a>
+  <a href="https://www.taoli001.cn/#scenes">应用场景</a>
+  <a href="https://www.taoli001.cn/applications/">陶粒应用</a>
+  <a href="https://www.taoli001.cn/blog/">陶粒博客</a>
+  <a href="https://www.taoli001.cn/#contact" class="nav-cta-mobile">立即咨询</a>
+</div>
 
 <section class="page-header"><h1>省钱又省心：采购陶粒的7个成本控制技巧</h1><p>陶粒采购7大成本控制技巧：统一规格、价格保护条款、现款现货折扣3-5%、散装比袋装省15-25%、建立备选库多向询价、关注政策动态、质价平衡避免返工成本。</p></section>
 <div class="breadcrumb"><a href="https://www.taoli001.cn/">首页</a> &raquo; <a href="https://www.taoli001.cn/blog/">陶粒博客</a> &raquo; <a href="https://www.taoli001.cn/blog/price.html">价格行情</a> &raquo; <span>省钱又省心：采购陶粒的7个成本控制技巧</span></div>
 <div class="article-container">
   <div class="article-meta"><span class="article-cat">价格行情</span><span>发布日期: 2026-05-19</span><span>来源: 九天建材</span></div>
-  <img src="https://www.taoli001.cn/images/applications/2019112218323815.jpg" alt="成本控制 - 省钱又省心：采购陶粒的7个成本控制技巧" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
+  <img src="https://www.taoli001.cn/images/applications/IMAG0086.jpg" alt="成本控制 - 省钱又省心：采购陶粒的7个成本控制技巧" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
   <div class="article-content"><p>陶粒采购看似简单，但其中有很多可以降低成本的操作细节。<strong>掌握以下7个实用技巧，可以在保证品质的前提下有效控制陶粒采购总成本</strong>。</p><h2>技巧一：统一采购规格</h2><p>同一个项目尽量统一陶粒规格，减少不同规格的切换。供应商对不同规格的备货意愿不同——主流规格优惠空间大，特殊规格要贵。如果一个项目同时需要5-10mm和10-20mm两种粒径，评估能否统一使用10-20mm（需确认设计是否允许）。统一规格后单规格批量更大，议价能力更强。</p><h2>技巧二：利用价格保护条款</h2><p>在长期合同中加入价格保护条款：约定当市场价格波动超过一定幅度（如±10%）时，双方重新协商价格。这既保护了采购方不会因价格暴涨而承受超额成本，也保护了供应商不会因价格暴跌而亏损供货。价格保护条款是维持长期合作关系的平衡器。</p><h2>技巧三：现款现货争取折扣</h2><p>建材行业普遍存在账期长、回款难的问题。如果采购方能够现款现货（或货到3日内付款），是供应商非常看重的优质客户。以此作为谈判筹码，通常可以争取到3%-5%的现金折扣。对于资金充裕的采购方，这是一个低风险的省钱方式。</p><h2>技巧四：优化包装方式</h2><p>批量采购优先选择散装（自卸车），比袋装便宜15%-25%。如果必须袋装，比较吨袋（1000kg大袋）和小袋（25kg装）的成本差异——吨袋通常比小袋便宜10%-15%（节省了大量包装和装袋人工费），但需要考虑工地是否有叉车或吊车配合卸货。</p><h2>技巧五：建立供应商备选库</h2><p>不要依赖单一供应商。建立3-5家陶粒供应商的备选库，每次采购前向备选库中至少3家询价。供应商知道你不是"非他不可"时，报价会更有竞争力。备选库中的供应商应有不同类型（大厂、中型厂、经销商各1-2家），以备不同场景选用。</p><h2>技巧六：关注产业政策动态</h2><p>建材行业受政策影响明显。例如：环保督查可能导致部分不合规矿山关停、原料价格上涨；绿色建材推广政策可能给认证产品带来税收优惠。关注重庆市住建委、经信委的产业政策发布，有助于预判价格走势。</p><h2>技巧七：培养"质价平衡"意识</h2><p>最低价不等于最省钱。应建立"总使用成本"的概念——价格低但品质差的产品可能导致返工、维修和工期损失。学会计算和比较不同品质等级的陶粒在具体项目中的"终身成本"，做真正的质价平衡决策。</p><div style="margin-top:28px;padding:20px 24px;background:#f5f0e8;border-radius:12px;border-left:4px solid var(--primary);"><p style="font-weight:700;color:var(--primary);margin-bottom:12px;">延伸阅读：</p><ul style="list-style:none;padding:0;"><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/3d49d794dcf8.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒采购成本优化：5个让供应商主动降价的谈判策略</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/f9999fcfc527.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">家庭装修用陶粒怎么买最划算：从量到价的全攻略</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/1b474446bf50.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">建筑工程陶粒用量计算与预算编制方法</a></li></ul></div></div>
   <div class="article-tags"><span class="article-tag">成本控制</span> <span class="article-tag">陶粒采购</span> <span class="article-tag">省钱技巧</span> <span class="article-tag">采购管理</span> <span class="article-tag">质价平衡</span> <span class="article-tag">降本增效</span></div>
 </div>
@@ -171,5 +197,18 @@ function submitComment(e){
 </script>
 <script>(function(){var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){bp.src='https://zz.bdstatic.com/linksubmit/push.js';}else{bp.src='http://push.zhanzhang.baidu.com/push.js';}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);})();</script>
 <a href="tel:19008096839" class="float-phone" title="立即电话咨询"><span class="icon">&#9742;</span></a>
+<script>
+// Hamburger menu
+(function(){
+  var toggle=document.getElementById('navToggle');
+  var drawer=document.getElementById('navDrawer');
+  var overlay=document.getElementById('navOverlay');
+  function open(){toggle.classList.add('active');drawer.classList.add('open');overlay.classList.add('show');document.body.style.overflow='hidden';}
+  function close(){toggle.classList.remove('active');drawer.classList.remove('open');overlay.classList.remove('show');document.body.style.overflow='';}
+  toggle.addEventListener('click',function(){toggle.classList.contains('active')?close():open();});
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});
+})();
+</script>
 </body>
 </html>

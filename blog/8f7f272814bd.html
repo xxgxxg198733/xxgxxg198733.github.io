@@ -23,14 +23,27 @@
   html{scroll-behavior:smooth;}
   body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);line-height:1.85;-webkit-font-smoothing:antialiased;}
   .nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:90px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.05);}
-  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;}
-  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;}
-  .nav-links{display:flex;gap:36px;list-style:none;}
-  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;}
+  .nav-brand{display:flex;align-items:center;flex-shrink:0;}
+  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;white-space:nowrap;}
+  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;white-space:nowrap;}
+  .nav-links{display:flex;gap:28px;list-style:none;flex-shrink:0;flex-wrap:nowrap;}
+  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;white-space:nowrap;}
   .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);transition:var(--transition);}
   .nav-links a:hover{color:var(--primary);}
   .nav-links a:hover::after,.nav-links a.active::after{width:100%;}
   .nav-links a.active{color:var(--primary);font-weight:700;}
+  .nav-toggle{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px;z-index:101;flex-shrink:0;}
+  .nav-toggle span{display:block;width:26px;height:2.5px;background:var(--text);border-radius:2px;transition:var(--transition);}
+  .nav-toggle.active span:nth-child(1){transform:rotate(45deg)translate(5px,5px);}
+  .nav-toggle.active span:nth-child(2){opacity:0;}
+  .nav-toggle.active span:nth-child(3){transform:rotate(-45deg)translate(5px,-5px);}
+  .nav-drawer{display:none;position:fixed;top:0;right:-100%;width:280px;height:100vh;background:#fff;z-index:99;padding:100px 32px 40px;box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .35s cubic-bezier(.25,.46,.45,.94);flex-direction:column;gap:8px;}
+  .nav-drawer.open{right:0;}
+  .nav-drawer a{display:block;padding:14px 0;text-decoration:none;color:var(--text);font-size:17px;font-weight:500;border-bottom:1px solid var(--border);transition:var(--transition);}
+  .nav-drawer a:hover{color:var(--primary);padding-left:8px;}
+  .nav-drawer .nav-cta-mobile{margin-top:12px;padding:14px 32px;background:var(--primary);color:#fff!important;border-radius:50px;text-align:center;font-weight:600;border-bottom:none;}
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:98;}
+  .nav-overlay.show{display:block;}
   .nav-cta{padding:8px 24px;background:var(--primary);color:#fff!important;border-radius:50px;font-weight:600;font-size:14px!important;}
   .nav-cta:hover{background:var(--primary-light);transform:translateY(-1px);}
   .nav-cta::after{display:none!important;}
@@ -77,8 +90,10 @@
   .float-phone .icon{font-size:28px;animation:ring 1.5s ease-in-out infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 6px 24px rgba(231,76,60,.4);}50%{box-shadow:0 6px 40px rgba(231,76,60,.7);}}
   @keyframes ring{0%,100%{transform:rotate(0);}10%{transform:rotate(15deg);}20%{transform:rotate(-15deg);}30%{transform:rotate(10deg);}40%{transform:rotate(-10deg);}50%{transform:rotate(0);}}
-  @media(max-width:1024px){.nav{padding:0 24px;height:72px;}.nav-logo{font-size:40px;letter-spacing:4px;}.nav-phone{font-size:30px;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:768px){.nav{padding:0 16px;height:64px;}.nav-logo{font-size:28px;}.nav-phone{font-size:16px;margin-left:8px;}.nav-links{display:none;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.article-container{padding:0 20px 40px;}.related-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}}
+  @media(max-width:1200px){.nav{padding:0 28px;}.nav-links{gap:20px;}}
+  @media(max-width:1024px){.nav{padding:0 24px;height:80px;}.nav-links{display:none;}.nav-toggle{display:flex;}.nav-drawer{display:flex;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:768px){.nav{padding:0 16px;height:68px;}.nav-logo{font-size:36px;letter-spacing:2px;}.nav-phone{font-size:22px;margin-left:10px;letter-spacing:1px;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.page-header p{font-size:15px;max-width:90%;}.article-container{padding:0 20px 40px;}.article-content h2{font-size:22px;margin:28px 0 12px;}.article-content{font-size:15px;}.article-meta{gap:12px;font-size:13px;}.related-section{padding:40px 20px;}.related-section h2{font-size:24px;}.related-grid{grid-template-columns:1fr;}.cta{padding:60px 20px;}.cta h2{font-size:28px;}.cta p{font-size:15px;}.footer{padding:40px 20px 24px;}.footer-grid{grid-template-columns:1fr;gap:24px;}.comment-section{padding:0 20px 40px;}.comment-section h2{font-size:20px;}.breadcrumb{padding:16px 20px 0;font-size:13px;}}
+  @media(max-width:480px){.nav{padding:0 12px;height:60px;}.nav-logo{font-size:28px;letter-spacing:1px;}.nav-phone{font-size:17px;margin-left:6px;letter-spacing:0;}.page-header{padding:100px 16px 32px;}.page-header h1{font-size:20px;}.page-header p{font-size:14px;}.article-container{padding:0 16px 32px;}.article-content h2{font-size:20px;margin:24px 0 10px;}.article-content{font-size:14px;}.btn{padding:12px 24px;font-size:14px;}.cta h2{font-size:24px;}.cta p{font-size:14px;}.footer{padding:32px 16px 20px;}.footer h4{font-size:14px;}.comment-section{padding:0 16px 32px;}.breadcrumb{padding:12px 16px 0;font-size:12px;}.nav-drawer{width:260px;}}
   .comment-section{max-width:900px;margin:0 auto;padding:0 40px 40px;}
   .comment-section h2{font-size:24px;font-weight:700;margin-bottom:24px;color:#1a1a1a;}
   .comment-form{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}
@@ -96,7 +111,9 @@
 </head>
 <body>
 <nav class="nav">
-  <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  <div class="nav-brand">
+    <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  </div>
   <ul class="nav-links">
     <li><a href="https://www.taoli001.cn/#products">产品展示</a></li>
     <li><a href="https://www.taoli001.cn/#scenes">应用场景</a></li>
@@ -104,13 +121,22 @@
     <li><a href="https://www.taoli001.cn/blog/" class="active">陶粒博客</a></li>
     <li><a href="https://www.taoli001.cn/#contact" class="nav-cta">立即咨询</a></li>
   </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span><span></span></button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="https://www.taoli001.cn/#products">产品展示</a>
+  <a href="https://www.taoli001.cn/#scenes">应用场景</a>
+  <a href="https://www.taoli001.cn/applications/">陶粒应用</a>
+  <a href="https://www.taoli001.cn/blog/">陶粒博客</a>
+  <a href="https://www.taoli001.cn/#contact" class="nav-cta-mobile">立即咨询</a>
+</div>
 
 <section class="page-header"><h1>陶粒混凝土的收缩与徐变特性：结构设计的长期变形考量</h1><p>陶粒混凝土收缩与徐变特性：干燥收缩偏高15-30%（陶粒弹模低约束弱）、自收缩偏低30-50%（内养护补偿）、总收缩取1.1-1.2倍安全系数、徐变系数偏高10-25%（微孔粘弹性变形）、预应力损失计算和长期挠度设计建议、后浇带封闭延长至56-60天。</p></section>
 <div class="breadcrumb"><a href="https://www.taoli001.cn/">首页</a> &raquo; <a href="https://www.taoli001.cn/blog/">陶粒博客</a> &raquo; <a href="https://www.taoli001.cn/blog/knowledge.html">陶粒知识</a> &raquo; <span>陶粒混凝土的收缩与徐变特性：结构设计的长期变形考量</span></div>
 <div class="article-container">
   <div class="article-meta"><span class="article-cat">陶粒知识</span><span>发布日期: 2026-04-16</span><span>来源: 九天建材</span></div>
-  <img src="https://www.taoli001.cn/images/applications/2019112218323815.jpg" alt="陶粒混凝土 - 陶粒混凝土的收缩与徐变特性：结构设计的长期变形考量" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
+  <img src="https://www.taoli001.cn/images/applications/444311983_907978993.jpg" alt="陶粒混凝土 - 陶粒混凝土的收缩与徐变特性：结构设计的长期变形考量" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
   <div class="article-content"><p>收缩和徐变是混凝土材料的两个长期变形特性，对结构的安全性和适用性有重要影响。<strong>陶粒混凝土的收缩和徐变行为与普通混凝土有所不同</strong>，结构设计时需要注意这些差异。</p><h2>收缩特性</h2><p>干燥收缩（水分蒸发引起的体积缩小）是混凝土最常见的收缩类型。陶粒混凝土的干燥收缩值通常比同强度等级普通混凝土大15%-30%——因为陶粒骨料的弹性模量低（10-30GPa），对水泥石收缩的约束能力弱（普通高弹模碎石骨料是"拉住"水泥石让其缩不动，陶粒骨料"拉不住"）。但陶粒的"内养护"效应（预湿陶粒内部储存的水分后期缓慢释放）可以显著降低自收缩（自干燥收缩、由于水泥水化消耗内部水分引起的收缩）——陶粒混凝土的自收缩比普通混凝土低30-50%。综合效果：陶粒混凝土的总收缩量与普通混凝土差异不大（干燥收缩偏高但自收缩偏低，两者部分抵消），但在设计时仍建议取普通混凝土收缩值的1.1-1.2倍作为安全系数。</p><h2>徐变特性</h2><p>徐变（持续荷载作用下变形随时间增长的现象）对预应力混凝土构件（预应力损失）和长期挠度（楼面跨中长期下垂）的影响显著。陶粒混凝土的徐变系数（徐变应变÷初始弹性应变）通常高于同级普通混凝土（约高10%-25%）——原因还是陶粒骨料的低弹性模量：在持续压力下，陶粒颗粒内部的微孔结构发生缓慢的粘弹性变形（类似于"压海绵"效应——荷载不变的条件下变形随时间缓慢增长）。</p><h2>设计应对措施</h2><p>预应力构件：计算预应力长期损失时应采用陶粒混凝土的实测徐变系数（而非普通混凝土的默认值），合理加大预应力张拉值以补偿长期损失。大跨度楼板：挠度计算应考虑徐变引起的长期挠度增量（长期挠度约为初始挠度的2.5-3.0倍），预留足够的起拱高度。后浇带设置：陶粒混凝土的早期收缩（前7天）占最终收缩的比例较高——后浇带的封闭时间应比普通混凝土适当延长（从一般42天延长至56-60天），待大部分早期收缩完成后再封闭。</p><h2>试验验证建议</h2><p>对于大跨度、预应力或对变形敏感的结构，建议在施工前进行陶粒混凝土的收缩和徐变验证试验（按GB/T 50082《普通混凝土长期性能和耐久性能试验方法标准》执行），取得实测值而非使用经验估算值。</p><div style="margin-top:28px;padding:20px 24px;background:#f5f0e8;border-radius:12px;border-left:4px solid var(--primary);"><p style="font-weight:700;color:var(--primary);margin-bottom:12px;">延伸阅读：</p><ul style="list-style:none;padding:0;"><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/fae7350ed7b0.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒混凝土的保温隔热性能：节能建筑的理想选择</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/19e676c66e12.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒应用于隧道衬砌和地下工程的轻质化方案</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/361b28dec134.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">陶粒是什么？一文讲透人造轻骨料的前世今生</a></li></ul></div></div>
   <div class="article-tags"><span class="article-tag">陶粒混凝土</span> <span class="article-tag">收缩</span> <span class="article-tag">徐变</span> <span class="article-tag">长期变形</span> <span class="article-tag">预应力损失</span> <span class="article-tag">结构设计</span></div>
 </div>
@@ -171,5 +197,18 @@ function submitComment(e){
 </script>
 <script>(function(){var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){bp.src='https://zz.bdstatic.com/linksubmit/push.js';}else{bp.src='http://push.zhanzhang.baidu.com/push.js';}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);})();</script>
 <a href="tel:19008096839" class="float-phone" title="立即电话咨询"><span class="icon">&#9742;</span></a>
+<script>
+// Hamburger menu
+(function(){
+  var toggle=document.getElementById('navToggle');
+  var drawer=document.getElementById('navDrawer');
+  var overlay=document.getElementById('navOverlay');
+  function open(){toggle.classList.add('active');drawer.classList.add('open');overlay.classList.add('show');document.body.style.overflow='hidden';}
+  function close(){toggle.classList.remove('active');drawer.classList.remove('open');overlay.classList.remove('show');document.body.style.overflow='';}
+  toggle.addEventListener('click',function(){toggle.classList.contains('active')?close():open();});
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});
+})();
+</script>
 </body>
 </html>

@@ -23,14 +23,27 @@
   html{scroll-behavior:smooth;}
   body{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);line-height:1.85;-webkit-font-smoothing:antialiased;}
   .nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:90px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.05);}
-  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;}
-  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;}
-  .nav-links{display:flex;gap:36px;list-style:none;}
-  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;}
+  .nav-brand{display:flex;align-items:center;flex-shrink:0;}
+  .nav-logo{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;white-space:nowrap;}
+  .nav-phone{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;white-space:nowrap;}
+  .nav-links{display:flex;gap:28px;list-style:none;flex-shrink:0;flex-wrap:nowrap;}
+  .nav-links a{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;white-space:nowrap;}
   .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);transition:var(--transition);}
   .nav-links a:hover{color:var(--primary);}
   .nav-links a:hover::after,.nav-links a.active::after{width:100%;}
   .nav-links a.active{color:var(--primary);font-weight:700;}
+  .nav-toggle{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px;z-index:101;flex-shrink:0;}
+  .nav-toggle span{display:block;width:26px;height:2.5px;background:var(--text);border-radius:2px;transition:var(--transition);}
+  .nav-toggle.active span:nth-child(1){transform:rotate(45deg)translate(5px,5px);}
+  .nav-toggle.active span:nth-child(2){opacity:0;}
+  .nav-toggle.active span:nth-child(3){transform:rotate(-45deg)translate(5px,-5px);}
+  .nav-drawer{display:none;position:fixed;top:0;right:-100%;width:280px;height:100vh;background:#fff;z-index:99;padding:100px 32px 40px;box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .35s cubic-bezier(.25,.46,.45,.94);flex-direction:column;gap:8px;}
+  .nav-drawer.open{right:0;}
+  .nav-drawer a{display:block;padding:14px 0;text-decoration:none;color:var(--text);font-size:17px;font-weight:500;border-bottom:1px solid var(--border);transition:var(--transition);}
+  .nav-drawer a:hover{color:var(--primary);padding-left:8px;}
+  .nav-drawer .nav-cta-mobile{margin-top:12px;padding:14px 32px;background:var(--primary);color:#fff!important;border-radius:50px;text-align:center;font-weight:600;border-bottom:none;}
+  .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:98;}
+  .nav-overlay.show{display:block;}
   .nav-cta{padding:8px 24px;background:var(--primary);color:#fff!important;border-radius:50px;font-weight:600;font-size:14px!important;}
   .nav-cta:hover{background:var(--primary-light);transform:translateY(-1px);}
   .nav-cta::after{display:none!important;}
@@ -77,8 +90,10 @@
   .float-phone .icon{font-size:28px;animation:ring 1.5s ease-in-out infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 6px 24px rgba(231,76,60,.4);}50%{box-shadow:0 6px 40px rgba(231,76,60,.7);}}
   @keyframes ring{0%,100%{transform:rotate(0);}10%{transform:rotate(15deg);}20%{transform:rotate(-15deg);}30%{transform:rotate(10deg);}40%{transform:rotate(-10deg);}50%{transform:rotate(0);}}
-  @media(max-width:1024px){.nav{padding:0 24px;height:72px;}.nav-logo{font-size:40px;letter-spacing:4px;}.nav-phone{font-size:30px;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:768px){.nav{padding:0 16px;height:64px;}.nav-logo{font-size:28px;}.nav-phone{font-size:16px;margin-left:8px;}.nav-links{display:none;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.article-container{padding:0 20px 40px;}.related-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}}
+  @media(max-width:1200px){.nav{padding:0 28px;}.nav-links{gap:20px;}}
+  @media(max-width:1024px){.nav{padding:0 24px;height:80px;}.nav-links{display:none;}.nav-toggle{display:flex;}.nav-drawer{display:flex;}.related-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:768px){.nav{padding:0 16px;height:68px;}.nav-logo{font-size:36px;letter-spacing:2px;}.nav-phone{font-size:22px;margin-left:10px;letter-spacing:1px;}.page-header{padding:120px 20px 40px;}.page-header h1{font-size:24px;}.page-header p{font-size:15px;max-width:90%;}.article-container{padding:0 20px 40px;}.article-content h2{font-size:22px;margin:28px 0 12px;}.article-content{font-size:15px;}.article-meta{gap:12px;font-size:13px;}.related-section{padding:40px 20px;}.related-section h2{font-size:24px;}.related-grid{grid-template-columns:1fr;}.cta{padding:60px 20px;}.cta h2{font-size:28px;}.cta p{font-size:15px;}.footer{padding:40px 20px 24px;}.footer-grid{grid-template-columns:1fr;gap:24px;}.comment-section{padding:0 20px 40px;}.comment-section h2{font-size:20px;}.breadcrumb{padding:16px 20px 0;font-size:13px;}}
+  @media(max-width:480px){.nav{padding:0 12px;height:60px;}.nav-logo{font-size:28px;letter-spacing:1px;}.nav-phone{font-size:17px;margin-left:6px;letter-spacing:0;}.page-header{padding:100px 16px 32px;}.page-header h1{font-size:20px;}.page-header p{font-size:14px;}.article-container{padding:0 16px 32px;}.article-content h2{font-size:20px;margin:24px 0 10px;}.article-content{font-size:14px;}.btn{padding:12px 24px;font-size:14px;}.cta h2{font-size:24px;}.cta p{font-size:14px;}.footer{padding:32px 16px 20px;}.footer h4{font-size:14px;}.comment-section{padding:0 16px 32px;}.breadcrumb{padding:12px 16px 0;font-size:12px;}.nav-drawer{width:260px;}}
   .comment-section{max-width:900px;margin:0 auto;padding:0 40px 40px;}
   .comment-section h2{font-size:24px;font-weight:700;margin-bottom:24px;color:#1a1a1a;}
   .comment-form{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}
@@ -96,7 +111,9 @@
 </head>
 <body>
 <nav class="nav">
-  <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  <div class="nav-brand">
+    <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  </div>
   <ul class="nav-links">
     <li><a href="https://www.taoli001.cn/#products">产品展示</a></li>
     <li><a href="https://www.taoli001.cn/#scenes">应用场景</a></li>
@@ -104,13 +121,22 @@
     <li><a href="https://www.taoli001.cn/blog/" class="active">陶粒博客</a></li>
     <li><a href="https://www.taoli001.cn/#contact" class="nav-cta">立即咨询</a></li>
   </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span><span></span></button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="https://www.taoli001.cn/#products">产品展示</a>
+  <a href="https://www.taoli001.cn/#scenes">应用场景</a>
+  <a href="https://www.taoli001.cn/applications/">陶粒应用</a>
+  <a href="https://www.taoli001.cn/blog/">陶粒博客</a>
+  <a href="https://www.taoli001.cn/#contact" class="nav-cta-mobile">立即咨询</a>
+</div>
 
 <section class="page-header"><h1>大足区+双桥经开区陶粒采购：渝西边陲的跨省采购思维</h1><p>大足+双桥陶粒采购：位于重庆最西端跨省采购打破行政区划边界（四川乐山/自贡可能比江津更近）、建议同时向重庆和四川两个方向询价比选到货价、跨省合同注意法律适用和发票抵扣问题、大足到货价230-290元/m³。</p></section>
 <div class="breadcrumb"><a href="https://www.taoli001.cn/">首页</a> &raquo; <a href="https://www.taoli001.cn/blog/">陶粒博客</a> &raquo; <a href="https://www.taoli001.cn/blog/district.html">区域采购</a> &raquo; <span>大足区+双桥经开区陶粒采购：渝西边陲的跨省采购思维</span></div>
 <div class="article-container">
   <div class="article-meta"><span class="article-cat">区域采购</span><span>发布日期: 2026-08-13</span><span>来源: 九天建材</span></div>
-  <img src="https://www.taoli001.cn/images/applications/IMAG0070_Jc.jpg" alt="大足陶粒 - 大足区+双桥经开区陶粒采购：渝西边陲的跨省采购思维" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
+  <img src="https://www.taoli001.cn/images/applications/IMG_0439.JPG" alt="大足陶粒 - 大足区+双桥经开区陶粒采购：渝西边陲的跨省采购思维" style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow);" onerror="this.style.display='none'">
   <div class="article-content"><p>大足区和双桥经济技术开发区位于重庆最西端（与四川资阳、内江接壤），<strong>采购陶粒时需要跳出"只看重庆本地供应商"的思维定式——四川方向的供应商可能更近更便宜</strong>。</p><h2>跨省采购的必要性</h2><p>大足区距离江津陶粒产区约100-130km（经绕城高速），陆运费70-90元/m³。而大足西侧的四川安岳、乐至等县市紧邻大足——四川乐山、自贡等陶粒产区（川南片区）如果经高速直达大足，运距约80-130km——可能比江津更近或相当。采购方应该打破行政区划的边界，基于"总到货价最低"的原则选择供应商——不管是重庆还是四川。大足和四川内江、资阳经济联系密切——跨省物流频繁，配送渠道成熟。</p><h2>大足区的建设热点</h2><p>大足石刻（世界文化遗产——宝顶山、北山石刻）周边的旅游设施建设、大足城区（龙岗、棠香街道）的新区扩展、双桥经开区（重庆老牌的汽车及零部件产业基地，现转型升级中）的厂房改建——这些项目产生持续的陶粒需求。</p><h2>跨省采购的实操建议</h2><p>向重庆（江津、永川、合川）和四川（乐山、自贡、内江/资阳本地如有厂家，或通过安岳的中转商）供应商分别询价——对比重庆方向和四川方向的到货价。如果选择四川方向的供应商，在合同中明确跨省运输的路线、费用和争议解决方式（跨省合同的法律适用问题——建议约定在需方所在地法院管辖）。发票方面注意跨省开具增值税发票的相关要求——提前咨询财务确认跨省发票的抵扣没有问题。</p><h2>双桥经开区的产业特点</h2><p>双桥是以汽车和装备制造为主导的产业区——重型厂房对地面的耐磨和抗冲击性能要求高（陶粒的缓震隔声性能有助于改善车间环境）。随着双桥产业升级，标准厂房和定制厂房的建设标准提高——对建材品质的要求随产业升级而提升，陶粒产品也需要品质升级来匹配。</p><h2>价格行情</h2><p>大足区建筑填充陶粒到货价约230-290元/m³（视来源方向），如选择四川方向供应商且运距相近则价格与江津方向基本持平或略低。</p><div style="margin-top:28px;padding:20px 24px;background:#f5f0e8;border-radius:12px;border-left:4px solid var(--primary);"><p style="font-weight:700;color:var(--primary);margin-bottom:12px;">延伸阅读：</p><ul style="list-style:none;padding:0;"><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/e65d3f36b87f.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">黔江区+酉阳县+秀山县陶粒采购：渝东南最偏远的建材供应三角</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/cdbb1046cd80.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">渝北区陶粒采购全攻略：供应商分布与价格参考</a></li><li style="margin-bottom:8px;">&raquo; <a href="https://www.taoli001.cn/blog/92420ebf4de3.html" style="color:var(--primary);text-decoration:underline;font-weight:500;">九龙坡区陶粒采购指南：建材市场与陶粒供应商地图</a></li></ul></div></div>
   <div class="article-tags"><span class="article-tag">大足陶粒</span> <span class="article-tag">双桥陶粒</span> <span class="article-tag">跨省采购</span> <span class="article-tag">四川供应商</span> <span class="article-tag">渝西边陲</span> <span class="article-tag">到货价比选</span></div>
 </div>
@@ -171,5 +197,18 @@ function submitComment(e){
 </script>
 <script>(function(){var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){bp.src='https://zz.bdstatic.com/linksubmit/push.js';}else{bp.src='http://push.zhanzhang.baidu.com/push.js';}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);})();</script>
 <a href="tel:19008096839" class="float-phone" title="立即电话咨询"><span class="icon">&#9742;</span></a>
+<script>
+// Hamburger menu
+(function(){
+  var toggle=document.getElementById('navToggle');
+  var drawer=document.getElementById('navDrawer');
+  var overlay=document.getElementById('navOverlay');
+  function open(){toggle.classList.add('active');drawer.classList.add('open');overlay.classList.add('show');document.body.style.overflow='hidden';}
+  function close(){toggle.classList.remove('active');drawer.classList.remove('open');overlay.classList.remove('show');document.body.style.overflow='';}
+  toggle.addEventListener('click',function(){toggle.classList.contains('active')?close():open();});
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});
+})();
+</script>
 </body>
 </html>

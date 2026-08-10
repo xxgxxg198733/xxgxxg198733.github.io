@@ -101,14 +101,27 @@ HEADER_TMPL = '''<!DOCTYPE html>
   html{{scroll-behavior:smooth;}}
   body{{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);line-height:1.85;-webkit-font-smoothing:antialiased;}}
   .nav{{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:90px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.05);}}
-  .nav-logo{{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;}}
-  .nav-phone{{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;}}
-  .nav-links{{display:flex;gap:36px;list-style:none;}}
-  .nav-links a{{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;}}
+  .nav-brand{{display:flex;align-items:center;flex-shrink:0;}}
+  .nav-logo{{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;white-space:nowrap;}}
+  .nav-phone{{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;white-space:nowrap;}}
+  .nav-links{{display:flex;gap:28px;list-style:none;flex-shrink:0;flex-wrap:nowrap;}}
+  .nav-links a{{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;white-space:nowrap;}}
   .nav-links a::after{{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);transition:var(--transition);}}
   .nav-links a:hover{{color:var(--primary);}}
   .nav-links a:hover::after,.nav-links a.active::after{{width:100%;}}
   .nav-links a.active{{color:var(--primary);font-weight:700;}}
+  .nav-toggle{{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px;z-index:101;flex-shrink:0;}}
+  .nav-toggle span{{display:block;width:26px;height:2.5px;background:var(--text);border-radius:2px;transition:var(--transition);}}
+  .nav-toggle.active span:nth-child(1){{transform:rotate(45deg)translate(5px,5px);}}
+  .nav-toggle.active span:nth-child(2){{opacity:0;}}
+  .nav-toggle.active span:nth-child(3){{transform:rotate(-45deg)translate(5px,-5px);}}
+  .nav-drawer{{display:none;position:fixed;top:0;right:-100%;width:280px;height:100vh;background:#fff;z-index:99;padding:100px 32px 40px;box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .35s cubic-bezier(.25,.46,.45,.94);flex-direction:column;gap:8px;}}
+  .nav-drawer.open{{right:0;}}
+  .nav-drawer a{{display:block;padding:14px 0;text-decoration:none;color:var(--text);font-size:17px;font-weight:500;border-bottom:1px solid var(--border);transition:var(--transition);}}
+  .nav-drawer a:hover{{color:var(--primary);padding-left:8px;}}
+  .nav-drawer .nav-cta-mobile{{margin-top:12px;padding:14px 32px;background:var(--primary);color:#fff!important;border-radius:50px;text-align:center;font-weight:600;border-bottom:none;}}
+  .nav-overlay{{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:98;}}
+  .nav-overlay.show{{display:block;}}
   .nav-cta{{padding:8px 24px;background:var(--primary);color:#fff!important;border-radius:50px;font-weight:600;font-size:14px!important;}}
   .nav-cta:hover{{background:var(--primary-light);transform:translateY(-1px);}}
   .nav-cta::after{{display:none!important;}}
@@ -155,8 +168,10 @@ HEADER_TMPL = '''<!DOCTYPE html>
   .float-phone .icon{{font-size:28px;animation:ring 1.5s ease-in-out infinite;}}
   @keyframes pulse{{0%,100%{{box-shadow:0 6px 24px rgba(231,76,60,.4);}}50%{{box-shadow:0 6px 40px rgba(231,76,60,.7);}}}}
   @keyframes ring{{0%,100%{{transform:rotate(0);}}10%{{transform:rotate(15deg);}}20%{{transform:rotate(-15deg);}}30%{{transform:rotate(10deg);}}40%{{transform:rotate(-10deg);}}50%{{transform:rotate(0);}}}}
-  @media(max-width:1024px){{.nav{{padding:0 24px;height:72px;}}.nav-logo{{font-size:40px;letter-spacing:4px;}}.nav-phone{{font-size:30px;}}.related-grid{{grid-template-columns:repeat(2,1fr);}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
-  @media(max-width:768px){{.nav{{padding:0 16px;height:64px;}}.nav-logo{{font-size:28px;}}.nav-phone{{font-size:16px;margin-left:8px;}}.nav-links{{display:none;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:24px;}}.article-container{{padding:0 20px 40px;}}.related-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:1fr;}}}}
+  @media(max-width:1200px){{.nav{{padding:0 28px;}}.nav-links{{gap:20px;}}}}
+  @media(max-width:1024px){{.nav{{padding:0 24px;height:80px;}}.nav-links{{display:none;}}.nav-toggle{{display:flex;}}.nav-drawer{{display:flex;}}.related-grid{{grid-template-columns:repeat(2,1fr);}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
+  @media(max-width:768px){{.nav{{padding:0 16px;height:68px;}}.nav-logo{{font-size:36px;letter-spacing:2px;}}.nav-phone{{font-size:22px;margin-left:10px;letter-spacing:1px;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:24px;}}.page-header p{{font-size:15px;max-width:90%;}}.article-container{{padding:0 20px 40px;}}.article-content h2{{font-size:22px;margin:28px 0 12px;}}.article-content{{font-size:15px;}}.article-meta{{gap:12px;font-size:13px;}}.related-section{{padding:40px 20px;}}.related-section h2{{font-size:24px;}}.related-grid{{grid-template-columns:1fr;}}.cta{{padding:60px 20px;}}.cta h2{{font-size:28px;}}.cta p{{font-size:15px;}}.footer{{padding:40px 20px 24px;}}.footer-grid{{grid-template-columns:1fr;gap:24px;}}.comment-section{{padding:0 20px 40px;}}.comment-section h2{{font-size:20px;}}.breadcrumb{{padding:16px 20px 0;font-size:13px;}}}}
+  @media(max-width:480px){{.nav{{padding:0 12px;height:60px;}}.nav-logo{{font-size:28px;letter-spacing:1px;}}.nav-phone{{font-size:17px;margin-left:6px;letter-spacing:0;}}.page-header{{padding:100px 16px 32px;}}.page-header h1{{font-size:20px;}}.page-header p{{font-size:14px;}}.article-container{{padding:0 16px 32px;}}.article-content h2{{font-size:20px;margin:24px 0 10px;}}.article-content{{font-size:14px;}}.btn{{padding:12px 24px;font-size:14px;}}.cta h2{{font-size:24px;}}.cta p{{font-size:14px;}}.footer{{padding:32px 16px 20px;}}.footer h4{{font-size:14px;}}.comment-section{{padding:0 16px 32px;}}.breadcrumb{{padding:12px 16px 0;font-size:12px;}}.nav-drawer{{width:260px;}}}}
   .comment-section{{max-width:900px;margin:0 auto;padding:0 40px 40px;}}
   .comment-section h2{{font-size:24px;font-weight:700;margin-bottom:24px;color:#1a1a1a;}}
   .comment-form{{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}}
@@ -174,7 +189,9 @@ HEADER_TMPL = '''<!DOCTYPE html>
 </head>
 <body>
 <nav class="nav">
-  <a href="{site_url}/" class="nav-logo">九天建材</a><a href="tel:{phone}" class="nav-phone">&#9742; {phone}</a>
+  <div class="nav-brand">
+    <a href="{site_url}/" class="nav-logo">九天建材</a><a href="tel:{phone}" class="nav-phone">&#9742; {phone}</a>
+  </div>
   <ul class="nav-links">
     <li><a href="{site_url}/#products">产品展示</a></li>
     <li><a href="{site_url}/#scenes">应用场景</a></li>
@@ -182,7 +199,16 @@ HEADER_TMPL = '''<!DOCTYPE html>
     <li><a href="{site_url}/blog/" class="active">陶粒博客</a></li>
     <li><a href="{site_url}/#contact" class="nav-cta">立即咨询</a></li>
   </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span><span></span></button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="{site_url}/#products">产品展示</a>
+  <a href="{site_url}/#scenes">应用场景</a>
+  <a href="{site_url}/applications/">陶粒应用</a>
+  <a href="{site_url}/blog/">陶粒博客</a>
+  <a href="{site_url}/#contact" class="nav-cta-mobile">立即咨询</a>
+</div>
 '''
 
 FOOTER_TMPL = '''
@@ -227,13 +253,26 @@ function submitComment(e){{
 </script>
 <script>(function(){{var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){{bp.src='https://zz.bdstatic.com/linksubmit/push.js';}}else{{bp.src='http://push.zhanzhang.baidu.com/push.js';}}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);}})();</script>
 <a href="tel:{phone}" class="float-phone" title="立即电话咨询"><span class="icon">&#9742;</span></a>
+<script>
+// Hamburger menu
+(function(){{
+  var toggle=document.getElementById('navToggle');
+  var drawer=document.getElementById('navDrawer');
+  var overlay=document.getElementById('navOverlay');
+  function open(){{toggle.classList.add('active');drawer.classList.add('open');overlay.classList.add('show');document.body.style.overflow='hidden';}}
+  function close(){{toggle.classList.remove('active');drawer.classList.remove('open');overlay.classList.remove('show');document.body.style.overflow='';}}
+  toggle.addEventListener('click',function(){{toggle.classList.contains('active')?close():open();}});
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('a').forEach(function(a){{a.addEventListener('click',close);}});
+}})();
+</script>
 </body>
 </html>
 '''
 
 CAT_NAMES = {
     "construction": "施工技巧", "garden": "园艺绿化", "knowledge": "陶粒知识",
-    "district": "区域采购", "price": "价格行情", "water": "水处理", "insulation": "工业保温"
+    "district": "区域采购", "price": "价格行情", "news": "行业新闻", "water": "水处理", "insulation": "工业保温"
 }
 
 def gen_article(art, all_articles):
@@ -395,14 +434,27 @@ def gen_listing(all_articles):
   html{{scroll-behavior:smooth;}}
   body{{font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text);background:var(--bg);line-height:1.85;-webkit-font-smoothing:antialiased;}}
   .nav{{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 40px;height:90px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.05);}}
-  .nav-logo{{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;}}
-  .nav-phone{{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;}}
-  .nav-links{{display:flex;gap:36px;list-style:none;}}
-  .nav-links a{{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;}}
+  .nav-brand{{display:flex;align-items:center;flex-shrink:0;}}
+  .nav-logo{{font-family:'Zhi Mang Xing','STXingkai',cursive;font-size:52px;color:var(--primary);letter-spacing:6px;text-decoration:none;line-height:1;white-space:nowrap;}}
+  .nav-phone{{font-family:'STKaiti','KaiTi',serif;font-size:52px;font-weight:900;color:#e74c3c;text-decoration:none;margin-left:24px;letter-spacing:2px;line-height:1;white-space:nowrap;}}
+  .nav-links{{display:flex;gap:28px;list-style:none;flex-shrink:0;flex-wrap:nowrap;}}
+  .nav-links a{{text-decoration:none;color:var(--text);font-size:15px;font-weight:500;transition:var(--transition);position:relative;white-space:nowrap;}}
   .nav-links a::after{{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);transition:var(--transition);}}
   .nav-links a:hover{{color:var(--primary);}}
   .nav-links a:hover::after,.nav-links a.active::after{{width:100%;}}
   .nav-links a.active{{color:var(--primary);font-weight:700;}}
+  .nav-toggle{{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px;z-index:101;flex-shrink:0;}}
+  .nav-toggle span{{display:block;width:26px;height:2.5px;background:var(--text);border-radius:2px;transition:var(--transition);}}
+  .nav-toggle.active span:nth-child(1){{transform:rotate(45deg)translate(5px,5px);}}
+  .nav-toggle.active span:nth-child(2){{opacity:0;}}
+  .nav-toggle.active span:nth-child(3){{transform:rotate(-45deg)translate(5px,-5px);}}
+  .nav-drawer{{display:none;position:fixed;top:0;right:-100%;width:280px;height:100vh;background:#fff;z-index:99;padding:100px 32px 40px;box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .35s cubic-bezier(.25,.46,.45,.94);flex-direction:column;gap:8px;}}
+  .nav-drawer.open{{right:0;}}
+  .nav-drawer a{{display:block;padding:14px 0;text-decoration:none;color:var(--text);font-size:17px;font-weight:500;border-bottom:1px solid var(--border);transition:var(--transition);}}
+  .nav-drawer a:hover{{color:var(--primary);padding-left:8px;}}
+  .nav-drawer .nav-cta-mobile{{margin-top:12px;padding:14px 32px;background:var(--primary);color:#fff!important;border-radius:50px;text-align:center;font-weight:600;border-bottom:none;}}
+  .nav-overlay{{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:98;}}
+  .nav-overlay.show{{display:block;}}
   .nav-cta{{padding:8px 24px;background:var(--primary);color:#fff!important;border-radius:50px;font-weight:600;font-size:14px!important;}}
   .nav-cta:hover{{background:var(--primary-light);transform:translateY(-1px);}}
   .nav-cta::after{{display:none!important;}}
@@ -436,8 +488,10 @@ def gen_listing(all_articles):
   .float-phone:hover{{transform:scale(1.1);}} .float-phone .icon{{font-size:28px;animation:ring 1.5s ease-in-out infinite;}}
   @keyframes pulse{{0%,100%{{box-shadow:0 6px 24px rgba(231,76,60,.4);}}50%{{box-shadow:0 6px 40px rgba(231,76,60,.7);}}}}
   @keyframes ring{{0%,100%{{transform:rotate(0);}}10%{{transform:rotate(15deg);}}20%{{transform:rotate(-15deg);}}30%{{transform:rotate(10deg);}}40%{{transform:rotate(-10deg);}}50%{{transform:rotate(0);}}}}
-  @media(max-width:1024px){{.nav{{padding:0 24px;height:72px;}}.nav-logo{{font-size:40px;}}.nav-phone{{font-size:30px;}}.blog-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
-  @media(max-width:768px){{.nav{{padding:0 16px;height:64px;}}.nav-logo{{font-size:28px;}}.nav-phone{{font-size:16px;margin-left:8px;}}.nav-links{{display:none;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:30px;}}.blog-grid{{padding:20px;}}.footer-grid{{grid-template-columns:1fr;}}}}
+  @media(max-width:1200px){{.nav{{padding:0 28px;}}.nav-links{{gap:20px;}}}}
+  @media(max-width:1024px){{.nav{{padding:0 24px;height:80px;}}.nav-links{{display:none;}}.nav-toggle{{display:flex;}}.nav-drawer{{display:flex;}}.blog-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
+  @media(max-width:768px){{.nav{{padding:0 16px;height:68px;}}.nav-logo{{font-size:36px;letter-spacing:2px;}}.nav-phone{{font-size:22px;margin-left:10px;letter-spacing:1px;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:26px;}}.page-header p{{font-size:15px;max-width:90%;}}.blog-grid{{padding:20px 20px 40px;}}.blog-card-body{{padding:16px;}}.blog-card-body h3{{font-size:15px;}}.cta{{padding:60px 20px;}}.cta h2{{font-size:28px;}}.cta p{{font-size:15px;}}.footer{{padding:40px 20px 24px;}}.footer-grid{{grid-template-columns:1fr;gap:24px;}}.breadcrumb{{padding:16px 20px 0;font-size:13px;}}.btn{{padding:12px 24px;font-size:14px;}}.cat-nav{{gap:8px;padding:16px 20px;overflow-x:auto;flex-wrap:nowrap;}}.cat-nav a{{font-size:13px;padding:8px 16px;white-space:nowrap;}}}}
+  @media(max-width:480px){{.nav{{padding:0 12px;height:60px;}}.nav-logo{{font-size:28px;letter-spacing:1px;}}.nav-phone{{font-size:17px;margin-left:6px;letter-spacing:0;}}.page-header{{padding:100px 16px 32px;}}.page-header h1{{font-size:20px;}}.page-header p{{font-size:14px;}}.article-container{{padding:0 16px 32px;}}.article-content h2{{font-size:20px;margin:24px 0 10px;}}.article-content{{font-size:14px;}}.btn{{padding:12px 24px;font-size:14px;}}.cta h2{{font-size:24px;}}.cta p{{font-size:14px;}}.footer{{padding:32px 16px 20px;}}.footer h4{{font-size:14px;}}.comment-section{{padding:0 16px 32px;}}.breadcrumb{{padding:12px 16px 0;font-size:12px;}}.nav-drawer{{width:260px;}}}}
 </style>
 <script>var _hmt=_hmt||[];(function(){{var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?50d17ca69efc1a95abaf2e673fdabebf";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);}})();</script>
 </head>
@@ -510,6 +564,19 @@ function filterCategory(cat,btn){{
 </script>
 <script>(function(){{var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){{bp.src='https://zz.bdstatic.com/linksubmit/push.js';}}else{{bp.src='http://push.zhanzhang.baidu.com/push.js';}}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);}})();</script>
 <a href="tel:{PHONE}" class="float-phone"><span class="icon">&#9742;</span></a>
+<script>
+// Hamburger menu
+(function(){{
+  var toggle=document.getElementById('navToggle');
+  var drawer=document.getElementById('navDrawer');
+  var overlay=document.getElementById('navOverlay');
+  function open(){{toggle.classList.add('active');drawer.classList.add('open');overlay.classList.add('show');document.body.style.overflow='hidden';}}
+  function close(){{toggle.classList.remove('active');drawer.classList.remove('open');overlay.classList.remove('show');document.body.style.overflow='';}}
+  toggle.addEventListener('click',function(){{toggle.classList.contains('active')?close():open();}});
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('a').forEach(function(a){{a.addEventListener('click',close);}});
+}})();
+</script>
 </body>
 </html>'''
 
@@ -525,6 +592,7 @@ def gen_category_page(cat_key, articles):
         "knowledge": "陶粒知识百科专题 — 陶粒生产工艺、性能参数、选购技巧、产品对比，全面了解陶粒材料特性。",
         "district": "区域采购指南专题 — 重庆各区县陶粒采购攻略，本地厂家推荐、运输成本分析、就近采购建议。",
         "garden": "园艺绿化陶粒专题 — 屋顶花园、阳台菜园、多肉盆栽、草坪排水等园艺陶粒应用技巧与实践分享。",
+        "news": "陶粒行业新闻专题 — 最新陶粒建材行业动态、市场走势、政策解读、企业快讯，紧跟陶粒行业前沿资讯。",
     }
 
     cards = ""
@@ -592,8 +660,10 @@ def gen_category_page(cat_key, articles):
   .float-phone:hover{{transform:scale(1.1);}} .float-phone .icon{{font-size:28px;animation:ring 1.5s ease-in-out infinite;}}
   @keyframes pulse{{0%,100%{{box-shadow:0 6px 24px rgba(231,76,60,.4);}}50%{{box-shadow:0 6px 40px rgba(231,76,60,.7);}}}}
   @keyframes ring{{0%,100%{{transform:rotate(0);}}10%{{transform:rotate(15deg);}}20%{{transform:rotate(-15deg);}}30%{{transform:rotate(10deg);}}40%{{transform:rotate(-10deg);}}50%{{transform:rotate(0);}}}}
-  @media(max-width:1024px){{.nav{{padding:0 24px;height:72px;}}.nav-logo{{font-size:40px;}}.nav-phone{{font-size:30px;}}.blog-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
-  @media(max-width:768px){{.nav{{padding:0 16px;height:64px;}}.nav-logo{{font-size:28px;}}.nav-phone{{font-size:16px;margin-left:8px;}}.nav-links{{display:none;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:30px;}}.blog-grid{{padding:20px;}}.footer-grid{{grid-template-columns:1fr;}}}}
+  @media(max-width:1200px){{.nav{{padding:0 28px;}}.nav-links{{gap:20px;}}}}
+  @media(max-width:1024px){{.nav{{padding:0 24px;height:80px;}}.nav-links{{display:none;}}.nav-toggle{{display:flex;}}.nav-drawer{{display:flex;}}.blog-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
+  @media(max-width:768px){{.nav{{padding:0 16px;height:68px;}}.nav-logo{{font-size:36px;letter-spacing:2px;}}.nav-phone{{font-size:22px;margin-left:10px;letter-spacing:1px;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:26px;}}.page-header p{{font-size:15px;max-width:90%;}}.blog-grid{{padding:20px 20px 40px;}}.blog-card-body{{padding:16px;}}.blog-card-body h3{{font-size:15px;}}.cta{{padding:60px 20px;}}.cta h2{{font-size:28px;}}.cta p{{font-size:15px;}}.footer{{padding:40px 20px 24px;}}.footer-grid{{grid-template-columns:1fr;gap:24px;}}.breadcrumb{{padding:16px 20px 0;font-size:13px;}}.btn{{padding:12px 24px;font-size:14px;}}.cat-nav{{gap:8px;padding:16px 20px;overflow-x:auto;flex-wrap:nowrap;}}.cat-nav a{{font-size:13px;padding:8px 16px;white-space:nowrap;}}}}
+  @media(max-width:480px){{.nav{{padding:0 12px;height:60px;}}.nav-logo{{font-size:28px;letter-spacing:1px;}}.nav-phone{{font-size:17px;margin-left:6px;letter-spacing:0;}}.page-header{{padding:100px 16px 32px;}}.page-header h1{{font-size:20px;}}.page-header p{{font-size:14px;}}.article-container{{padding:0 16px 32px;}}.article-content h2{{font-size:20px;margin:24px 0 10px;}}.article-content{{font-size:14px;}}.btn{{padding:12px 24px;font-size:14px;}}.cta h2{{font-size:24px;}}.cta p{{font-size:14px;}}.footer{{padding:32px 16px 20px;}}.footer h4{{font-size:14px;}}.comment-section{{padding:0 16px 32px;}}.breadcrumb{{padding:12px 16px 0;font-size:12px;}}.nav-drawer{{width:260px;}}}}
 </style>
 <script>var _hmt=_hmt||[];(function(){{var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?50d17ca69efc1a95abaf2e673fdabebf";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);}})();</script>
 </head>
@@ -615,13 +685,26 @@ def gen_category_page(cat_key, articles):
   <div class="footer-grid">
     <div class="footer-brand"><h4 style="font-size:20px;">&#9679; 九天建材</h4><p>专注于高品质陶粒研发、生产与销售。</p></div>
     <div><h4>产品中心</h4><a href="{SITE_URL}/#products">建筑结构陶粒</a><a href="{SITE_URL}/#products">园艺绿化陶粒</a><a href="{SITE_URL}/#products">水处理滤料陶粒</a><a href="{SITE_URL}/#products">耐火保温陶粒</a></div>
-    <div><h4>博客分类</h4>{"".join(f'<a href="{SITE_URL}/blog/{k}.html">{v}</a>' for k,v in CAT_NAMES.items() if k in ["construction","price","knowledge","district","garden"])}</div>
+    <div><h4>博客分类</h4>{"".join(f'<a href="{SITE_URL}/blog/{k}.html">{v}</a>' for k,v in CAT_NAMES.items() if k in ["construction","price","knowledge","district","garden","news"])}</div>
     <div><h4>联系方式</h4><a href="tel:{PHONE}">电话：{PHONE}</a><a href="mailto:{EMAIL}">邮箱：{EMAIL}</a></div>
   </div>
   <div class="footer-bottom">&copy; 2026 九天建材. All rights reserved.</div>
 </footer>
 <script>(function(){{var bp=document.createElement('script');var curProtocol=window.location.protocol.split(':')[0];if(curProtocol==='https'){{bp.src='https://zz.bdstatic.com/linksubmit/push.js';}}else{{bp.src='http://push.zhanzhang.baidu.com/push.js';}}var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s);}})();</script>
 <a href="tel:{PHONE}" class="float-phone"><span class="icon">&#9742;</span></a>
+<script>
+// Hamburger menu
+(function(){{
+  var toggle=document.getElementById('navToggle');
+  var drawer=document.getElementById('navDrawer');
+  var overlay=document.getElementById('navOverlay');
+  function open(){{toggle.classList.add('active');drawer.classList.add('open');overlay.classList.add('show');document.body.style.overflow='hidden';}}
+  function close(){{toggle.classList.remove('active');drawer.classList.remove('open');overlay.classList.remove('show');document.body.style.overflow='';}}
+  toggle.addEventListener('click',function(){{toggle.classList.contains('active')?close():open();}});
+  overlay.addEventListener('click',close);
+  drawer.querySelectorAll('a').forEach(function(a){{a.addEventListener('click',close);}});
+}})();
+</script>
 </body>
 </html>'''
 
@@ -644,11 +727,11 @@ with open(os.path.join(BLOG_DIR, "index.html"), "w", encoding="utf-8") as f:
 print("  listing page done")
 
 # Category hub pages
-for cat_key in ["construction", "price", "knowledge", "district", "garden"]:
+for cat_key in ["construction", "price", "knowledge", "district", "garden", "news"]:
     cat_html = gen_category_page(cat_key, ARTICLES)
     with open(os.path.join(BLOG_DIR, f"{cat_key}.html"), "w", encoding="utf-8") as f:
         f.write(cat_html)
     print(f"  category: {cat_key}")
 
-print(f"All {len(ARTICLES)} blog articles + listing + {5} category pages generated.")
-print(f"Files: blog/*.html ({len(ARTICLES)+1+5} files)")
+print(f"All {len(ARTICLES)} blog articles + listing + {6} category pages generated.")
+print(f"Files: blog/*.html ({len(ARTICLES)+1+6} files)")
