@@ -53,19 +53,23 @@
     padding: 0 40px; height: 90px; display: flex; align-items: center; justify-content: space-between;
     background: rgba(255,255,255,.92); backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px); box-shadow: 0 1px 0 rgba(0,0,0,.05);
+    flex-wrap: nowrap;
   }
+  .nav-brand { display: flex; align-items: center; flex-shrink: 0; }
   .nav-logo {
     font-family: 'Zhi Mang Xing', 'STXingkai', cursive;
     font-size: 52px; color: var(--primary); letter-spacing: 6px; text-decoration: none; line-height: 1;
+    white-space: nowrap;
   }
   .nav-phone {
     font-family: 'STKaiti', 'KaiTi', serif; font-size: 52px; font-weight: 900;
     color: #e74c3c; text-decoration: none; margin-left: 24px; letter-spacing: 2px; line-height: 1;
+    white-space: nowrap;
   }
-  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links { display: flex; gap: 28px; list-style: none; flex-shrink: 0; flex-wrap: nowrap; }
   .nav-links a {
     text-decoration: none; color: var(--text); font-size: 15px; font-weight: 500;
-    transition: var(--transition); position: relative;
+    transition: var(--transition); position: relative; white-space: nowrap;
   }
   .nav-links a::after {
     content: ''; position: absolute; bottom: -4px; left: 0; width: 0;
@@ -81,6 +85,26 @@
   }
   .nav-cta:hover { background: var(--primary-light); transform: translateY(-1px); }
   .nav-cta::after { display: none !important; }
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 8px; z-index: 101; flex-shrink: 0; }
+  .nav-toggle span { display: block; width: 26px; height: 2.5px; background: var(--text); border-radius: 2px; transition: var(--transition); }
+  .nav-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .nav-toggle.active span:nth-child(2) { opacity: 0; }
+  .nav-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+  .nav-drawer { display: none; position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: #fff; z-index: 99; padding: 100px 32px 40px; box-shadow: -4px 0 24px rgba(0,0,0,.1); transition: right .35s cubic-bezier(.25,.46,.45,.94); flex-direction: column; gap: 8px; }
+  .nav-drawer.open { right: 0; }
+  .nav-drawer a { display: block; padding: 14px 0; text-decoration: none; color: var(--text); font-size: 17px; font-weight: 500; border-bottom: 1px solid var(--border); transition: var(--transition); }
+  .nav-drawer a:hover { color: var(--primary); padding-left: 8px; }
+  .nav-drawer .nav-cta-mobile { margin-top: 12px; padding: 14px 32px; background: var(--primary); color: #fff !important; border-radius: 50px; text-align: center; font-weight: 600; border-bottom: none; }
+  .nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 98; }
+  .nav-overlay.show { display: block; }
+  .mobile-cta-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: #fff; padding: 12px 16px; box-shadow: 0 -2px 12px rgba(0,0,0,.08); justify-content: center; gap: 16px; align-items: center; }
+  .mobile-cta-bar .btn-phone { background: #e74c3c; color: #fff; padding: 12px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; text-decoration: none; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+  .mobile-cta-bar .btn-email { background: #fff; color: var(--primary); padding: 12px 24px; border-radius: 50px; font-weight: 600; font-size: 14px; text-decoration: none; border: 2px solid var(--primary); }
+  @media (max-width: 768px) { .mobile-cta-bar { display: flex; } .float-phone { display: none; } body { padding-bottom: 80px; } }
+  @media (max-width: 1200px) { .nav { padding: 0 28px; } .nav-links { gap: 20px; } }
+  @media (max-width: 1024px) { .nav { padding: 0 24px; height: 80px; } .nav-links { display: none; } .nav-toggle { display: flex; } .nav-drawer { display: flex; } }
+  @media (max-width: 768px) { .nav { padding: 0 16px; height: 68px; } .nav-logo { font-size: 36px; letter-spacing: 2px; } .nav-phone { font-size: 22px; margin-left: 10px; letter-spacing: 1px; } }
+  @media (max-width: 480px) { .nav { padding: 0 12px; height: 60px; } .nav-logo { font-size: 28px; letter-spacing: 1px; } .nav-phone { font-size: 17px; margin-left: 6px; letter-spacing: 0; } .nav-drawer { width: 260px; } }
 
   .page-header {
     padding: 140px 40px 60px; text-align: center;
@@ -242,7 +266,9 @@ var _hmt = _hmt || [];
 </head>
 <body>
 <nav class="nav">
-  <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  <div class="nav-brand">
+    <a href="https://www.taoli001.cn/" class="nav-logo">九天建材</a><a href="tel:19008096839" class="nav-phone">&#9742; 19008096839</a>
+  </div>
   <ul class="nav-links">
     <li><a href="https://www.taoli001.cn/#products">产品展示</a></li>
     <li><a href="https://www.taoli001.cn/#scenes">应用场景</a></li>
@@ -251,7 +277,17 @@ var _hmt = _hmt || [];
     <li><a href="https://www.taoli001.cn/blog/">陶粒博客</a></li>
     <li><a href="https://www.taoli001.cn/#contact" class="nav-cta">立即咨询</a></li>
   </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span><span></span></button>
 </nav>
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <a href="https://www.taoli001.cn/#products">产品展示</a>
+  <a href="https://www.taoli001.cn/#scenes">应用场景</a>
+  <a href="https://www.taoli001.cn/#features">核心优势</a>
+  <a href="https://www.taoli001.cn/applications/">陶粒应用</a>
+  <a href="https://www.taoli001.cn/blog/">陶粒博客</a>
+  <a href="https://www.taoli001.cn/#contact" class="nav-cta-mobile">立即咨询</a>
+</div>
 
 <section class="page-header">
   <h1>内江医用玻璃窑炉陶粒隔热层温度场优化项目</h1>
@@ -358,5 +394,23 @@ var _hmt = _hmt || [];
 })();
 </script>
 <a href="tel:19008096839" class="float-phone" title="立即电话咨询"><span class="icon">&#9742;</span></a>
+
+<!-- Mobile CTA Bar -->
+<div class="mobile-cta-bar">
+  <a href="tel:19008096839" class="btn-phone">&#9742; 19008096839 立即拨打</a>
+</div>
+
+// Hamburger menu
+(function(){
+  var toggle = document.getElementById('navToggle');
+  var drawer = document.getElementById('navDrawer');
+  var overlay = document.getElementById('navOverlay');
+  function open(){ toggle.classList.add('active'); drawer.classList.add('open'); overlay.classList.add('show'); document.body.style.overflow = 'hidden'; }
+  function close(){ toggle.classList.remove('active'); drawer.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow = ''; }
+  toggle.addEventListener('click', function(){ toggle.classList.contains('active') ? close() : open(); });
+  overlay.addEventListener('click', close);
+  drawer.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+})();
+
 </body>
 </html>
