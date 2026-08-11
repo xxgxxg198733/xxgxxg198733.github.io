@@ -87,6 +87,7 @@ def expand_keywords(art):
         "district": ["厂家直销", "哪里买", "供应商", "采购指南", "附近陶粒厂", "配送范围"],
         "garden": ["种植技巧", "怎么用", "排水方案", "屋顶花园做法", "盆栽搭配", "阳台种菜"],
         "news": ["最新消息", "行业动态", "政策解读", "市场分析", "发展趋势"],
+        "product": ["产品介绍", "型号规格", "技术参数", "应用案例", "选购建议", "性能对比"],
     }
 
     suffixes = cat_suffixes.get(cat, [])
@@ -116,7 +117,7 @@ def expand_keywords(art):
             new_kws.add(f"{region}{primary}{s}")
 
     # 4. Question-based long-tail for knowledge/news
-    if cat in ("knowledge", "news", "construction"):
+    if cat in ("knowledge", "news", "construction", "product"):
         q_words = ["什么是", "怎么", "如何"]
         for q in q_words[:1]:
             if primary:
@@ -387,7 +388,7 @@ function submitComment(e){{
 
 CAT_NAMES = {
     "construction": "施工技巧", "garden": "园艺绿化", "knowledge": "陶粒知识",
-    "district": "区域采购", "price": "价格行情", "news": "行业新闻", "water": "水处理", "insulation": "工业保温"
+    "district": "区域采购", "price": "价格行情", "news": "行业新闻", "product": "产品博客", "water": "水处理", "insulation": "工业保温"
 }
 
 def gen_article(art, all_articles):
@@ -743,6 +744,7 @@ def gen_category_page(cat_key, articles):
         "district": "区域采购指南专题 — 重庆各区县陶粒采购攻略，本地厂家推荐、运输成本分析、就近采购建议。",
         "garden": "园艺绿化陶粒专题 — 屋顶花园、阳台菜园、多肉盆栽、草坪排水等园艺陶粒应用技巧与实践分享。",
         "news": "陶粒行业新闻专题 — 最新陶粒建材行业动态、市场走势、政策解读、企业快讯，紧跟陶粒行业前沿资讯。",
+        "product": "陶粒产品博客专题 — 建筑陶粒、园艺陶粒、水处理陶粒等各类型号规格详解，产品性能对比与选购指南。",
     }
 
     cards = ""
@@ -835,7 +837,7 @@ def gen_category_page(cat_key, articles):
   <div class="footer-grid">
     <div class="footer-brand"><h4 style="font-size:20px;">&#9679; 九天建材</h4><p>专注于高品质陶粒研发、生产与销售。</p></div>
     <div><h4>产品中心</h4><a href="{SITE_URL}/#products">建筑结构陶粒</a><a href="{SITE_URL}/#products">园艺绿化陶粒</a><a href="{SITE_URL}/#products">水处理滤料陶粒</a><a href="{SITE_URL}/#products">耐火保温陶粒</a></div>
-    <div><h4>博客分类</h4>{"".join(f'<a href="{SITE_URL}/blog/{k}.html">{v}</a>' for k,v in CAT_NAMES.items() if k in ["construction","price","knowledge","district","garden","news"])}</div>
+    <div><h4>博客分类</h4>{"".join(f'<a href="{SITE_URL}/blog/{k}.html">{v}</a>' for k,v in CAT_NAMES.items() if k in ["construction","price","knowledge","district","garden","news","product"])}</div>
     <div><h4>联系方式</h4><a href="tel:{PHONE}">电话：{PHONE}</a><a href="mailto:{EMAIL}">邮箱：{EMAIL}</a></div>
   </div>
   <div class="footer-bottom">&copy; 2026 九天建材. All rights reserved.</div>
@@ -877,14 +879,14 @@ with open(os.path.join(BLOG_DIR, "index.html"), "w", encoding="utf-8") as f:
 print("  listing page done")
 
 # Category hub pages
-for cat_key in ["construction", "price", "knowledge", "district", "garden", "news"]:
+for cat_key in ["construction", "price", "knowledge", "district", "garden", "news", "product"]:
     cat_html = gen_category_page(cat_key, ARTICLES)
     with open(os.path.join(BLOG_DIR, f"{cat_key}.html"), "w", encoding="utf-8") as f:
         f.write(cat_html)
     print(f"  category: {cat_key}")
 
-print(f"All {len(ARTICLES)} blog articles + listing + {6} category pages generated.")
-print(f"Files: blog/*.html ({len(ARTICLES)+1+6} files)")
+print(f"All {len(ARTICLES)} blog articles + listing + {7} category pages generated.")
+print(f"Files: blog/*.html ({len(ARTICLES)+1+7} files)")
 
 # ====== Generate Sitemap ======
 TODAY = __import__('datetime').date.today().isoformat()
