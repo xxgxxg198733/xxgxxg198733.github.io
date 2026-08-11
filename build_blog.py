@@ -128,6 +128,9 @@ def expand_keywords(art):
     city_pattern = _re.compile(r'(重庆|成都|四川|云南|贵州|海南|广州|山西|青海|西藏|新疆)(重庆|成都|四川|云南|贵州|海南|广州|山西|青海|西藏|新疆)')
     filtered = [k for k in new_kws if len(k) <= 20 and not city_pattern.search(k)]
 
+    # Only keep generated keywords that contain 陶粒 (preserve all original base keywords)
+    filtered = [k for k in filtered if k in base_kws or "陶粒" in k]
+
     # Remove any that are just city pairs
     final = filtered[:25]
     return ",".join(final)
@@ -333,7 +336,7 @@ FOOTER_TMPL = '''
     <div class="footer-brand"><h4 style="font-size:20px;">&#9679; 九天建材</h4><p>专注于高品质陶粒研发、生产与销售，致力于为客户提供绿色建材整体解决方案。</p></div>
     <div><h4>产品中心</h4><a href="{site_url}/#products">建筑结构陶粒</a><a href="{site_url}/#products">园艺绿化陶粒</a><a href="{site_url}/#products">水处理滤料陶粒</a><a href="{site_url}/#products">耐火保温陶粒</a></div>
     <div><h4>内容导航</h4><a href="{site_url}/applications/">陶粒应用案例</a><a href="{site_url}/blog/">陶粒博客</a><a href="{site_url}/#scenes">应用场景</a><a href="{site_url}/#features">核心优势</a></div>
-    <div><h4>联系方式</h4><a href="tel:{phone}">电话：{phone}</a><a href="mailto:{email}">邮箱：{email}</a><a href="#">成都：四川成都高新区海洋路</a><a href="#">重庆：重庆市两江新区观音桥建北一支路</a></div>
+    <div><h4>联系方式</h4><a href="tel:{phone}" style="color:#e74c3c;font-size:18px;font-weight:700;">&#9742; {phone}</a><a href="mailto:{email}">邮箱：{email}</a><a href="#">成都：四川成都高新区海洋路</a><a href="#">重庆：重庆市两江新区观音桥建北一支路</a></div>
   </div>
   <div class="footer-bottom">&copy; 2026 九天建材 · 绿色建材品质之选. All rights reserved.</div>
 </footer>
