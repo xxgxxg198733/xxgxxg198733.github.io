@@ -5,7 +5,7 @@ Reads blog_data.py, fetches images via Pexels API (or fallback), generates HTML 
 """
 import os, sys, json, hashlib, random, re
 
-SITE_URL = "https://www.taoli001.cn"
+SITE_URL = "https://www.webnavhub.com"
 SITE_NAME = "九天建材"
 PHONE = "19008096839"
 EMAIL = "xxgxxg198733@gmail.com"
@@ -550,35 +550,97 @@ def gen_article(art, all_articles):
     footer = FOOTER_TMPL.format(site_url=SITE_URL, phone=PHONE, email=EMAIL)
     return header + article_html + footer
 
-def gen_listing(all_articles):
-    """Generate blog index page."""
+def _build_pagination(page, total_pages):
+    """Build pagination nav HTML."""
+    if total_pages <= 1:
+        return ""
+    html = '<div class="pagination">'
+    # Previous page
+    if page > 1:
+        prev_url = f"{SITE_URL}/blog/" if page == 2 else f"{SITE_URL}/blog/page-{page - 1}.html"
+        html += f'<a href="{prev_url}" class="page-link">&laquo; 上一页</a>'
+    else:
+        html += '<span class="page-link disabled">&laquo; 上一页</span>'
+    # Page numbers
+    start_p = max(1, page - 2)
+    end_p = min(total_pages, page + 2)
+    if start_p > 1:
+        html += f'<a href="{SITE_URL}/blog/" class="page-link">1</a>'
+        if start_p > 2:
+            html += '<span class="page-info">...</span>'
+    for p in range(start_p, end_p + 1):
+        if p == page:
+            html += f'<span class="page-link active">{p}</span>'
+        elif p == 1:
+            html += f'<a href="{SITE_URL}/blog/" class="page-link">1</a>'
+        else:
+            html += f'<a href="{SITE_URL}/blog/page-{p}.html" class="page-link">{p}</a>'
+    if end_p < total_pages:
+        if end_p < total_pages - 1:
+            html += '<span class="page-info">...</span>'
+        html += f'<a href="{SITE_URL}/blog/page-{total_pages}.html" class="page-link">{total_pages}</a>'
+    # Next page
+    if page < total_pages:
+        html += f'<a href="{SITE_URL}/blog/page-{page + 1}.html" class="page-link">下一页 &raquo;</a>'
+    else:
+        html += '<span class="page-link disabled">下一页 &raquo;</span>'
+    html += f'<span class="page-info">共{total_pages}页</span></div>'
+    return html
+
+def gen_listing(all_articles, page=1, per_page=40):
+    """Generate blog listing page with pagination."""
+    sorted_articles = sorted(all_articles, key=lambda x: x["date"], reverse=True)
+    total = len(all_articles)
+    total_pages = max(1, (len(sorted_articles) + per_page - 1) // per_page)
+    page = max(1, min(page, total_pages))
+    start = (page - 1) * per_page
+    page_articles = sorted_articles[start:start + per_page]
+
     cat_counts = {}
     for a in all_articles:
         cat_counts[a["cat"]] = cat_counts.get(a["cat"], 0) + 1
     sq = "'"
 
     cards = ""
-    for art in sorted(all_articles, key=lambda x: x["date"], reverse=True):
+    for art in page_articles:
         cards += f'''<a href="{SITE_URL}/blog/{art["slug"]}.html" class="blog-card" data-category="{art["cat"]}">
   <h3>{art["title"]}</h3>
   <p>{art["meta_desc"][:120]}...</p>
   <div class="blog-card-meta"><span class="article-cat" style="font-size:12px;">{CAT_NAMES.get(art["cat"], art["cat"])}</span><span>{art["date"]}</span></div>
 </a>'''
 
+    # Build pagination HTML
+    pagination_html = _build_pagination(page, total_pages)
+
+    # SEO: page-specific meta
+    page_suffix = f" - 第{page}页" if page > 1 else ""
+    page_title = f"陶粒博客{page_suffix} | 重庆陶粒选购·施工·价格·知识 | {SITE_NAME}"
+    page_desc = f"{SITE_NAME}陶粒博客{page_suffix} - 重庆陶粒选购指南、施工技巧、价格行情、产品知识分享，覆盖重庆各区县陶粒采购攻略。"
+    canonical = f"{SITE_URL}/blog/" if page == 1 else f"{SITE_URL}/blog/page-{page}.html"
+    og_url = canonical
+
+    # Prev/next links for SEO
+    prev_next = ""
+    if page > 1:
+        prev_url = f"{SITE_URL}/blog/" if page == 2 else f"{SITE_URL}/blog/page-{page - 1}.html"
+        prev_next += f'<link rel="prev" href="{prev_url}">\n'
+    if page < total_pages:
+        prev_next += f'<link rel="next" href="{SITE_URL}/blog/page-{page + 1}.html">\n'
+
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="description" content="{SITE_NAME}陶粒博客 - 重庆陶粒选购指南、施工技巧、价格行情、产品知识分享，覆盖重庆各区县陶粒采购攻略。">
-<meta name="keywords" content="陶粒博客,重庆陶粒,陶粒知识,陶粒选购,陶粒施工,陶粒价格,重庆建材博客">
-<meta name="robots" content="index,follow">
-<link rel="canonical" href="{SITE_URL}/blog/">
-<meta property="og:title" content="陶粒博客 | {SITE_NAME}">
-<meta property="og:description" content="{SITE_NAME}陶粒博客 - 陶粒选购、施工、价格、知识分享">
-<meta property="og:type" content="website">
-<meta property="og:url" content="{SITE_URL}/blog/">
-<title>陶粒博客 | 重庆陶粒选购·施工·价格·知识 | {SITE_NAME}</title>
+<meta name="description" content="{page_desc}">
+	<meta name="keywords" content="陶粒博客,重庆陶粒,陶粒知识,陶粒选购,陶粒施工,陶粒价格,重庆建材博客">
+	<meta name="robots" content="index,follow">
+	<link rel="canonical" href="{canonical}">{prev_next}
+	<meta property="og:title" content="{page_title}">
+	<meta property="og:description" content="{page_desc}">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="{og_url}">
+	<title>{page_title}</title>
 <script type="application/ld+json">{{"@context":"https://schema.org","@type":"Blog","name":"九天建材陶粒博客","description":"陶粒选购、施工、价格、知识分享","url":"{SITE_URL}/blog/"}}</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
@@ -624,6 +686,12 @@ def gen_listing(all_articles):
   .cat-btn.active{{background:var(--primary);color:#fff;}}
   .cat-count{{font-weight:400;opacity:.7;font-size:13px;}}
   .blog-card.hidden{{display:none;}}
+	.pagination{{display:flex;justify-content:center;align-items:center;gap:6px;padding:0 40px 50px;flex-wrap:wrap;}}
+	.page-link{{display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:40px;padding:0 14px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;transition:var(--transition);background:var(--white);color:var(--text);box-shadow:var(--shadow);border:none;cursor:pointer;font-family:inherit;}}
+	.page-link:hover{{background:var(--primary);color:#fff;}}
+	.page-link.active{{background:var(--primary);color:#fff;}}
+	.page-link.disabled{{opacity:.4;pointer-events:none;}}
+	.page-info{{color:var(--text-light);font-size:14px;margin:0 8px;}}
   .no-results{{display:none;text-align:center;padding:40px 20px 60px;color:var(--text-light);font-size:16px;grid-column:1/-1;}}
   .blog-grid{{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:1100px;margin:0 auto;padding:30px 40px 60px;}}
   .blog-card{{background:var(--white);border-radius:var(--radius);padding:28px 32px;box-shadow:var(--shadow);transition:var(--transition);text-decoration:none;color:var(--text);display:flex;flex-direction:column;}}
@@ -644,7 +712,7 @@ def gen_listing(all_articles):
   @keyframes ring{{0%,100%{{transform:rotate(0);}}10%{{transform:rotate(15deg);}}20%{{transform:rotate(-15deg);}}30%{{transform:rotate(10deg);}}40%{{transform:rotate(-10deg);}}50%{{transform:rotate(0);}}}}
   @media(max-width:1200px){{.nav{{padding:0 28px;}}.nav-links{{gap:20px;}}}}
   @media(max-width:1024px){{.nav{{padding:0 24px;height:80px;}}.nav-links{{display:none;}}.nav-toggle{{display:flex;}}.nav-drawer{{display:flex;}}.blog-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
-  @media(max-width:768px){{.nav{{padding:0 16px;height:68px;}}.nav-logo{{font-size:36px;letter-spacing:2px;}}.nav-phone{{font-size:22px;margin-left:10px;letter-spacing:1px;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:26px;}}.page-header p{{font-size:15px;max-width:90%;}}.blog-grid{{padding:20px 20px 40px;}}.blog-card-body{{padding:16px;}}.blog-card-body h3{{font-size:15px;}}.cta{{padding:60px 20px;}}.cta h2{{font-size:28px;}}.cta p{{font-size:15px;}}.footer{{padding:40px 20px 24px;}}.footer-grid{{grid-template-columns:1fr;gap:24px;}}.breadcrumb{{padding:16px 20px 0;font-size:13px;}}.btn{{padding:12px 24px;font-size:14px;}}.cat-nav{{gap:8px;padding:16px 20px;overflow-x:auto;flex-wrap:nowrap;}}.cat-nav a{{font-size:13px;padding:8px 16px;white-space:nowrap;}}}}
+  @media(max-width:768px){{.nav{{padding:0 16px;height:68px;}}.nav-logo{{font-size:36px;letter-spacing:2px;}}.nav-phone{{font-size:22px;margin-left:10px;letter-spacing:1px;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:26px;}}.page-header p{{font-size:15px;max-width:90%;}}.blog-grid{{padding:20px 20px 40px;}}.blog-card-body{{padding:16px;}}.blog-card-body h3{{font-size:15px;}}.cta{{padding:60px 20px;}}.cta h2{{font-size:28px;}}.cta p{{font-size:15px;}}.footer{{padding:40px 20px 24px;}}.footer-grid{{grid-template-columns:1fr;gap:24px;}}.breadcrumb{{padding:16px 20px 0;font-size:13px;}}.btn{{padding:12px 24px;font-size:14px;}}.cat-nav{{gap:8px;padding:16px 20px;overflow-x:auto;flex-wrap:nowrap;}}.cat-nav a{{font-size:13px;padding:8px 16px;white-space:nowrap;}}.pagination{{gap:4px;padding:0 20px 30px;}}.page-link{{min-width:34px;height:34px;font-size:13px;}}}}
   @media(max-width:480px){{.nav{{padding:0 12px;height:60px;}}.nav-logo{{font-size:28px;letter-spacing:1px;}}.nav-phone{{font-size:17px;margin-left:6px;letter-spacing:0;}}.page-header{{padding:100px 16px 32px;}}.page-header h1{{font-size:20px;}}.page-header p{{font-size:14px;}}.article-container{{padding:0 16px 32px;}}.article-content h2{{font-size:20px;margin:24px 0 10px;}}.article-content{{font-size:14px;}}.btn{{padding:12px 24px;font-size:14px;}}.cta h2{{font-size:24px;}}.cta p{{font-size:14px;}}.footer{{padding:32px 16px 20px;}}.footer h4{{font-size:14px;}}.comment-section{{padding:0 16px 32px;}}.breadcrumb{{padding:12px 16px 0;font-size:12px;}}.nav-drawer{{width:260px;}}}}
 </style>
 <script>var _hmt=_hmt||[];(function(){{var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?50d17ca69efc1a95abaf2e673fdabebf";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);}})();</script>
@@ -660,10 +728,11 @@ def gen_listing(all_articles):
     <li><a href="{SITE_URL}/#contact" class="nav-cta">立即咨询</a></li>
   </ul>
 </nav>
-<section class="page-header"><h1><span>陶粒博客</span></h1><p>重庆陶粒选购指南 · 施工技巧 · 价格行情 · 产品知识 — 分享陶粒行业实用干货</p></section>
+<section class="page-header"><h1><span>陶粒博客{page_suffix}</span></h1><p>重庆陶粒选购指南 · 施工技巧 · 价格行情 · 产品知识 — 分享陶粒行业实用干货 · 共{total}篇文章</p></section>
 <div class="breadcrumb"><a href="{SITE_URL}/">首页</a> &raquo; <span>陶粒博客</span></div>
 <div class="cat-nav"><button class="cat-btn active" data-filter="all" onclick="filterCategory('all',this)">全部 <span class="cat-count">({len(all_articles)})</span></button>{" ".join(f'<button class="cat-btn" data-filter="{c}" onclick="filterCategory({sq}{c}{sq},this)">{CAT_NAMES.get(c,c)} <span class="cat-count">({n})</span></button>' for c,n in cat_counts.items())}</div>
 <div class="blog-grid" id="blogGrid">{cards}</div>
+	{pagination_html}
 <div class="no-results" id="noResults">该分类下暂无文章</div>
 <footer class="footer">
   <div class="footer-grid">
@@ -817,7 +886,7 @@ def gen_category_page(cat_key, articles):
   @keyframes ring{{0%,100%{{transform:rotate(0);}}10%{{transform:rotate(15deg);}}20%{{transform:rotate(-15deg);}}30%{{transform:rotate(10deg);}}40%{{transform:rotate(-10deg);}}50%{{transform:rotate(0);}}}}
   @media(max-width:1200px){{.nav{{padding:0 28px;}}.nav-links{{gap:20px;}}}}
   @media(max-width:1024px){{.nav{{padding:0 24px;height:80px;}}.nav-links{{display:none;}}.nav-toggle{{display:flex;}}.nav-drawer{{display:flex;}}.blog-grid{{grid-template-columns:1fr;}}.footer-grid{{grid-template-columns:repeat(2,1fr);}}}}
-  @media(max-width:768px){{.nav{{padding:0 16px;height:68px;}}.nav-logo{{font-size:36px;letter-spacing:2px;}}.nav-phone{{font-size:22px;margin-left:10px;letter-spacing:1px;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:26px;}}.page-header p{{font-size:15px;max-width:90%;}}.blog-grid{{padding:20px 20px 40px;}}.blog-card-body{{padding:16px;}}.blog-card-body h3{{font-size:15px;}}.cta{{padding:60px 20px;}}.cta h2{{font-size:28px;}}.cta p{{font-size:15px;}}.footer{{padding:40px 20px 24px;}}.footer-grid{{grid-template-columns:1fr;gap:24px;}}.breadcrumb{{padding:16px 20px 0;font-size:13px;}}.btn{{padding:12px 24px;font-size:14px;}}.cat-nav{{gap:8px;padding:16px 20px;overflow-x:auto;flex-wrap:nowrap;}}.cat-nav a{{font-size:13px;padding:8px 16px;white-space:nowrap;}}}}
+  @media(max-width:768px){{.nav{{padding:0 16px;height:68px;}}.nav-logo{{font-size:36px;letter-spacing:2px;}}.nav-phone{{font-size:22px;margin-left:10px;letter-spacing:1px;}}.page-header{{padding:120px 20px 40px;}}.page-header h1{{font-size:26px;}}.page-header p{{font-size:15px;max-width:90%;}}.blog-grid{{padding:20px 20px 40px;}}.blog-card-body{{padding:16px;}}.blog-card-body h3{{font-size:15px;}}.cta{{padding:60px 20px;}}.cta h2{{font-size:28px;}}.cta p{{font-size:15px;}}.footer{{padding:40px 20px 24px;}}.footer-grid{{grid-template-columns:1fr;gap:24px;}}.breadcrumb{{padding:16px 20px 0;font-size:13px;}}.btn{{padding:12px 24px;font-size:14px;}}.cat-nav{{gap:8px;padding:16px 20px;overflow-x:auto;flex-wrap:nowrap;}}.cat-nav a{{font-size:13px;padding:8px 16px;white-space:nowrap;}}.pagination{{gap:4px;padding:0 20px 30px;}}.page-link{{min-width:34px;height:34px;font-size:13px;}}}}
   @media(max-width:480px){{.nav{{padding:0 12px;height:60px;}}.nav-logo{{font-size:28px;letter-spacing:1px;}}.nav-phone{{font-size:17px;margin-left:6px;letter-spacing:0;}}.page-header{{padding:100px 16px 32px;}}.page-header h1{{font-size:20px;}}.page-header p{{font-size:14px;}}.article-container{{padding:0 16px 32px;}}.article-content h2{{font-size:20px;margin:24px 0 10px;}}.article-content{{font-size:14px;}}.btn{{padding:12px 24px;font-size:14px;}}.cta h2{{font-size:24px;}}.cta p{{font-size:14px;}}.footer{{padding:32px 16px 20px;}}.footer h4{{font-size:14px;}}.comment-section{{padding:0 16px 32px;}}.breadcrumb{{padding:12px 16px 0;font-size:12px;}}.nav-drawer{{width:260px;}}}}
 </style>
 <script>var _hmt=_hmt||[];(function(){{var hm=document.createElement("script");hm.src="https://hm.baidu.com/hm.js?50d17ca69efc1a95abaf2e673fdabebf";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);}})();</script>
@@ -875,11 +944,18 @@ for i, art in enumerate(ARTICLES):
     if (i+1) % 10 == 0:
         print(f"  {i+1}/{len(ARTICLES)} done")
 
-# Listing page
-listing = gen_listing(ARTICLES)
-with open(os.path.join(BLOG_DIR, "index.html"), "w", encoding="utf-8") as f:
-    f.write(listing)
-print("  listing page done")
+# Listing pages (paginated, 40 per page)
+PER_PAGE = 40
+total_pages = max(1, (len(ARTICLES) + PER_PAGE - 1) // PER_PAGE)
+for p in range(1, total_pages + 1):
+    listing = gen_listing(ARTICLES, page=p, per_page=PER_PAGE)
+    if p == 1:
+        path = os.path.join(BLOG_DIR, "index.html")
+    else:
+        path = os.path.join(BLOG_DIR, f"page-{p}.html")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(listing)
+print(f"  listing: {total_pages} pages (40/pg)")
 
 # Category hub pages
 for cat_key in ["construction", "price", "knowledge", "district", "garden", "news", "product"]:
@@ -888,8 +964,8 @@ for cat_key in ["construction", "price", "knowledge", "district", "garden", "new
         f.write(cat_html)
     print(f"  category: {cat_key}")
 
-print(f"All {len(ARTICLES)} blog articles + listing + {7} category pages generated.")
-print(f"Files: blog/*.html ({len(ARTICLES)+1+7} files)")
+print(f"All {len(ARTICLES)} blog articles + {total_pages} listing pages + {7} category pages generated.")
+print(f"Files: blog/*.html ({len(ARTICLES)+total_pages+7} files)")
 
 # ====== Generate Sitemap ======
 TODAY = __import__('datetime').date.today().isoformat()
@@ -903,6 +979,9 @@ for f in sorted(_glob.glob('applications/taoli-*.html')):
     sitemap_urls.append((f, 'monthly', '0.5'))
 # Blog
 sitemap_urls.append(('blog/', 'daily', '0.9'))
+# Paginated listing pages
+for p in range(2, total_pages + 1):
+    sitemap_urls.append((f'blog/page-{p}.html', 'daily', '0.8'))
 for a in ARTICLES:
     sitemap_urls.append((f'blog/{a["slug"]}.html', 'monthly', '0.7'))
 for cat_key in CAT_NAMES:
@@ -914,7 +993,7 @@ sitemap_xml = ['<?xml version="1.0" encoding="UTF-8"?>',
                '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
 for path, freq, pri in sitemap_urls:
     sitemap_xml.append('  <url>')
-    sitemap_xml.append(f'    <loc>https://www.taoli001.cn/{path}</loc>')
+    sitemap_xml.append(f'    <loc>{SITE_URL}/{path}</loc>')
     sitemap_xml.append(f'    <lastmod>{TODAY}</lastmod>')
     sitemap_xml.append(f'    <changefreq>{freq}</changefreq>')
     sitemap_xml.append(f'    <priority>{pri}</priority>')
