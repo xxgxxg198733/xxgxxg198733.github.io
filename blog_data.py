@@ -6,7 +6,7 @@ Each article 500+ words, human-written quality, SEO optimized.
 """
 import hashlib
 
-SITE_URL = "https://www.webnavhub.com"
+SITE_URL = "https://www.taoli001.cn"
 SITE_NAME = "九天建材"
 PHONE = "19008096839"
 

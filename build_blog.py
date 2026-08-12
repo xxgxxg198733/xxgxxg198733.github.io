@@ -5,7 +5,7 @@ Reads blog_data.py, fetches images via Pexels API (or fallback), generates HTML 
 """
 import os, sys, json, hashlib, random, re
 
-SITE_URL = "https://www.webnavhub.com"
+SITE_URL = "https://www.taoli001.cn"
 SITE_NAME = "九天建材"
 PHONE = "19008096839"
 EMAIL = "xxgxxg198733@gmail.com"
